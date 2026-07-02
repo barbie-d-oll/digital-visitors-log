@@ -1,7 +1,7 @@
 export default function Sidebar() {
     return (
-        <div>
-            <h1 className="w-64 h-screen bg-slate-900 text-white p-6">Digital Visitor Log</h1>
+        <div className="w-64 h-screen bg-slate-900 text-white p-6">
+            <h1>Digital Visitor Log</h1>
             <p>MAIN MENU</p>
             <ul>
                 <li>Dashboard</li>
