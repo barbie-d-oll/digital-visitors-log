@@ -1,25 +1,28 @@
+import Link from "next/link";
 export default function Sidebar() {
     return (
         <div className="w-64 h-screen bg-slate-900 text-white p-6">
             <h1>Digital Visitor Log</h1>
             <p>MAIN MENU</p>
-            <ul>
-                <li>Dashboard</li>
 
-                <li>Visitors</li>
+            <ul className="space-y-4 mt-8">
 
-                <li>Attendance</li>
+                <li><Link href="/dashboard">Dashboard</Link></li>
 
-                <li>Reports</li>
+                <li><Link href="/dashboard/companies">Companies</Link></li>
 
-                <li>Notifications</li>
+                <li><Link href="/dashboard/staff">Staff</Link></li>
 
-                <li>Settings</li>
+                <li><Link href="/dashboard/visitors">Visitors</Link></li>
+
+                <li><Link href="/dashboard/reports">Reports</Link></li>
+
+                <li><Link href="/dashboard/settings">Settings</Link></li><br />
 
             </ul>
 
 
-            <hr />
+            <hr /><br />
 
             <p>Barbara Logah</p>
             <p>Administrator</p>
