@@ -13,7 +13,7 @@ export default function VisitorsPage() {
         </div>
 
         <Link
-          href="/dashboard/visitors/register"
+          href="/dashboard/visitor/register"
           className="bg-blue-600 text-white px-5 py-3 rounded-lg hover:bg-blue-700">
 
           + Register Visitor
@@ -27,7 +27,6 @@ export default function VisitorsPage() {
           <thead>
             <tr className="border-b">
               <th className="text-left py-3">Visitor</th>
-              <th>Company</th>
               <th>Host</th>
               <th>Purpose</th>
               <th>Time In</th>

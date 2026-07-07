@@ -13,9 +13,9 @@ export default function Sidebar() {
 
                 <li><Link href="/dashboard/staff">Staff</Link></li>
 
-                <li><Link href="/dashboard/visitors">Visitors</Link></li>
+                <li><Link href="/dashboard/visitor">Visitors</Link></li>
 
-                <li><Link href="/dashboard/reports">Reports</Link></li>
+                <li><Link href="/dashboard/report">Reports</Link></li>
 
                 <li><Link href="/dashboard/settings">Settings</Link></li><br />
 

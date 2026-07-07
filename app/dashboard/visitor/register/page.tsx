@@ -1,14 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import DashboardLayout from "../../components/layouts/DashboardLayout";
+import DashboardLayout from "../../../components/layouts/DashboardLayout";
 import { db } from "@/lib/firebase";
 import { addDoc, collection } from "firebase/firestore";
 
 export default function RegisterVisitorPage() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-  const [company, setCompany] = useState("");
   const [purpose, setPurpose] = useState("");
   const [staff, setStaff] = useState("");
 
@@ -17,7 +16,6 @@ export default function RegisterVisitorPage() {
       await addDoc(collection(db, "visitors"), {
         name,
         phone,
-        company,
         purpose,
         staff,
         status: "Pending",
@@ -28,7 +26,6 @@ export default function RegisterVisitorPage() {
 
       setName("");
       setPhone("");
-      setCompany("");
       setPurpose("");
       setStaff("");
     } catch (error) {
@@ -61,15 +58,6 @@ export default function RegisterVisitorPage() {
                 className="w-full border rounded-lg p-3"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-              />
-            </div>
-
-            <div>
-              <label className="block mb-2">Company</label>
-              <input
-                className="w-full border rounded-lg p-3"
-                value={company}
-                onChange={(e) => setCompany(e.target.value)}
               />
             </div>
 

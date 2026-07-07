@@ -1,15 +1,35 @@
+"use client";
+
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 import DashboardLayout from "../components/layouts/DashboardLayout";
 import StatCard from "../components/dashboard/StatCard";
 import VisitorChart from "../components/dashboard/VisitorChart";
 
 export default function DashboardPage() {
+  const [visitors, setVisitors] = useState<any[]>([]);
+
+  useEffect(() => {
+    void loadVisitors();
+  }, []);
+
+  async function loadVisitors() {
+    const snapshot = await getDocs(collection(db, "visitors"));
+
+    const data = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    setVisitors(data);
+  }
+
     return (
         <DashboardLayout>
             <div className="space-y-8">
                 <div>
-                    <h2 className="text-3xl font-bold text-slate-800">
-                        Dashboard
-                    </h2>
                     <p className="text-gray-500">
                         Welcome back, Barbara 👋
                     </p>
@@ -40,21 +60,21 @@ export default function DashboardPage() {
                         </h3>
 
                         <div className="space-y-3">
-                            <button className="w-full bg-blue-600 text-white rounded-lg py-3">
+                            <Link href="/dashboard/visitor/register" className="block w-full bg-blue-600 text-white rounded-lg py-3 text-center">
                                 Register Visitor
-                            </button>
+                            </Link>
 
-                            <button className="w-full bg-green-600 text-white rounded-lg py-3">
+                            <Link href="/dashboard/staff/add" className="block w-full bg-green-600 text-white rounded-lg py-3 text-center">
                                 Add Staff
-                            </button>
+                            </Link>
 
-                            <button className="w-full bg-orange-500 text-white rounded-lg py-3">
+                            <Link href="/dashboard/visitor" className="block w-full bg-orange-500 text-white rounded-lg py-3 text-center">
                                 Visitor History
-                            </button>
+                            </Link>
 
-                            <button className="w-full bg-slate-800 text-white rounded-lg py-3">
-                                Reports
-                            </button>
+                            <Link href="/dashboard/companies" className="block w-full bg-slate-800 text-white rounded-lg py-3 text-center">
+                                Companies
+                            </Link>
                         </div>
                     </div>
 
@@ -76,27 +96,31 @@ export default function DashboardPage() {
                             </tr>
                         </thead>
 
-                        <tbody>
-                            <tr className="border-b">
-                                <td className="py-4">John Mensah</td>
-                                <td>MTN Ghana</td>
-                                <td>Barbara</td>
-                                <td>09:30 AM</td>
-                                <td className="text-green-600 font-semibold">
-                                    Approved
-                                </td>
-                            </tr>
+    <tbody>
+      {visitors.map((visitor: any) => (
 
-                            <tr className="border-b">
-                                <td className="py-4">Akosua Boateng</td>
-                                <td>Vodafone</td>
-                                <td>Samuel</td>
-                                <td>10:15 AM</td>
-                                <td className="text-yellow-600 font-semibold">
-                                    Pending
-                                </td>
-                            </tr>
-                        </tbody>
+     <tr key={visitor.id} className="border-b">
+      
+      <td className="py-4">
+        {visitor.name}
+      </td>
+
+      <td>
+        {visitor.staff}
+      </td>
+
+      <td>
+        {visitor.checkIn?.toDate
+          ? visitor.checkIn.toDate().toLocaleTimeString()
+          : "-"}
+      </td>
+
+      <td className="text-green-600 font-semibold">
+        {visitor.status}
+      </td>
+      </tr>
+      ))}
+    </tbody>
                     </table>
                 </div>
 
