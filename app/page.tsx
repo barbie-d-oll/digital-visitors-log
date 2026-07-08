@@ -1,12 +1,5 @@
-
-
-// import DashboardPage from "./dashboard/page";
-
-// export default function Home() {
-//   return <DashboardPage />;
-// }
-import { redirect } from "next/navigation";
+import HomeLayoutPage from "@/components/home/home-layout";
 
 export default function Home() {
-  redirect("/login");
+  return <HomeLayoutPage />;
 }
