@@ -14,7 +14,7 @@ export default function CompaniesPage() {
                 </div>
 
                 <Link
-                    href="/components/dashboard/companies/add"
+                    href="/dashboard/companies/add"
                     className="bg-blue-600 text-white px-5 py-3 rounded-lg hover:bg-blue-700"
                 >
                     + Add Company

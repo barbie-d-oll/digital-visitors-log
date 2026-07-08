@@ -10,6 +10,7 @@ import VisitorChart from "../components/dashboard/VisitorChart";
 
 export default function DashboardPage() {
   const [visitors, setVisitors] = useState<any[]>([]);
+  const[loading, setLoading] = useState(true);
 
   useEffect(() => {
     void loadVisitors();
