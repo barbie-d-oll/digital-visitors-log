@@ -8,40 +8,59 @@ import DashboardLayout from "../components/layouts/DashboardLayout";
 import StatCard from "../components/dashboard/StatCard";
 import VisitorChart from "../components/dashboard/VisitorChart";
 
+interface Visitor {
+  id: string;
+  name: string;
+  company: string;
+  staff: string;
+  checkIn?: { toDate: () => Date };
+  status: string;
+  [key: string]: unknown;
+}
+
 export default function DashboardPage() {
-  const [visitors, setVisitors] = useState<any[]>([]);
-  const[loading, setLoading] = useState(true);
+  const [visitors, setVisitors] = useState<Visitor[]>([]);
 
   useEffect(() => {
-    void loadVisitors();
+    const abortController = new AbortController();
+
+    const loadVisitors = async () => {
+      try {
+        const snapshot = await getDocs(collection(db, "visitors"));
+
+        if (!abortController.signal.aborted) {
+          const data = snapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          })) as Visitor[];
+
+          setVisitors(data);
+        }
+      } catch (error) {
+        if (!abortController.signal.aborted) {
+          console.error("Error loading visitors:", error);
+        }
+      }
+    };
+
+    loadVisitors();
+
+    return () => abortController.abort();
   }, []);
-
-  async function loadVisitors() {
-    const snapshot = await getDocs(collection(db, "visitors"));
-
-    const data = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
-
-    setVisitors(data);
-  }
 
     return (
         <DashboardLayout>
             <div className="space-y-8">
                 <div>
                     <p className="text-gray-500">
-                        Welcome back, Barbara 👋
+                        Welcome to the dashboard, 👋
                     </p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-                    <StatCard title="Visitors Today" value={18} />
-                    <StatCard title="Pending Approval" value={4} />
-                    <StatCard title="Staff Present" value={67} />
-                    <StatCard title="Checked Out" value={11} />
-                </div>
+                <StatCard
+    title="Total Visitors"
+    value={visitors.length}
+/>
 
                 <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
 
@@ -50,7 +69,7 @@ export default function DashboardPage() {
                             Visitor Check-ins
                         </h3>
 
-                        <div className="h-80 flex items-center justify-center text-gray-400">
+                        <div className="h-[520px]">
                             <VisitorChart />
                         </div>
                     </div>
@@ -98,7 +117,7 @@ export default function DashboardPage() {
                         </thead>
 
     <tbody>
-      {visitors.map((visitor: any) => (
+      {visitors.map((visitor: Visitor) => (
 
      <tr key={visitor.id} className="border-b">
       
@@ -107,14 +126,18 @@ export default function DashboardPage() {
       </td>
 
       <td>
-        {visitor.staff}
-      </td>
+  {visitor.company}
+</td>
 
-      <td>
-        {visitor.checkIn?.toDate
-          ? visitor.checkIn.toDate().toLocaleTimeString()
-          : "-"}
-      </td>
+<td>
+  {visitor.staff}
+</td>
+
+<td>
+  {visitor.checkIn?.toDate
+    ? visitor.checkIn.toDate().toLocaleTimeString()
+    : "-"}
+</td>
 
       <td className="text-green-600 font-semibold">
         {visitor.status}

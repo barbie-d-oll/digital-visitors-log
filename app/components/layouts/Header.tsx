@@ -1,49 +1,50 @@
 import { Bell, Search } from "lucide-react";
 
 export default function Header() {
-    return (
-        <header className="flex items-center justify-between bg-white rounded-xl p-6 shadow-sm">
+  return (
+    <header className="fixed top-0 left-64 right-0 h-20 bg-white shadow-sm flex items-center justify-between px-8 z-40">
 
-            {/* Left Side */}
-            <div>
-                <h1 className="text-3xl font-bold text-slate-800">
-                    Dashboard
-                </h1>
+      {/* Left Side */}
+      <div>
+        <h1 className="text-3xl font-bold text-slate-800">
+          Dashboard
+        </h1>
+      </div>
 
-            </div>
+      {/* Right Side */}
+      <div className="flex items-center gap-4">
 
-            {/* Right Side */}
-            <div className="flex items-center gap-4">
+        {/* Search */}
+        <div className="flex items-center bg-gray-100 px-4 py-2 rounded-lg">
 
-                {/* Search Box */}
-                <div className="flex items-center bg-gray-100 px-4 py-2 rounded-lg">
-                    <Search size={18} className="text-gray-500" />
+          <Search size={18} className="text-gray-500" />
 
-                    <input
-                        type="text"
-                        placeholder="Search..."
-                        className="bg-transparent outline-none ml-2"
-                    />
-                </div>
+          <input
+            type="text"
+            placeholder="Search..."
+            className="bg-transparent outline-none ml-2"
+          />
 
-                {/* Notification */}
-                <button className="bg-gray-100 p-3 rounded-lg">
-                    <Bell size={20} />
-                </button>
+        </div>
 
-                {/* User */}
-                <div className="text-right">
-                    <h3 className="font-semibold">
-                        Barbara Logah
-                    </h3>
+        {/* Notifications */}
+        <button className="bg-gray-100 p-3 rounded-lg hover:bg-gray-200">
+          <Bell size={20} />
+        </button>
 
-                    <p className="text-sm text-gray-500">
-                        Company Administrator
-                    </p>
-                </div>
+        {/* User */}
+        <div className="text-right">
+          <h3 className="font-semibold">
+            Barbara Logah
+          </h3>
 
-            </div>
+          <p className="text-sm text-gray-500">
+            Company Administrator
+          </p>
+        </div>
 
-        </header>
-    );
+      </div>
+
+    </header>
+  );
 }
