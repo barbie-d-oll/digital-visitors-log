@@ -7,8 +7,8 @@ export default function Header() {
       {/* Left Side */}
       <div>
         <h1 className="text-3xl font-bold text-slate-800">
-          Dashboard
-        </h1>
+    Dashboard
+</h1>
       </div>
 
       {/* Right Side */}
