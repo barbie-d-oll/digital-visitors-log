@@ -1,7 +1,14 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  getDocs,
+  query,
+  serverTimestamp,
+  where,
+} from "firebase/firestore";
 import {
   ArrowRight,
   Building2,
@@ -32,11 +39,59 @@ const emptyForm: VisitorForm = {
   staff: "",
 };
 
+const signedOutStatuses = new Set(["Signed Out", "Checked Out"]);
+
+const getCodeLetters = (name: string) => {
+  const letters = name.replace(/[^a-z]/gi, "");
+  const firstLetter = letters.at(0)?.toUpperCase() ?? "V";
+  const lastLetter = letters.at(-1)?.toUpperCase() ?? firstLetter;
+
+  return `${firstLetter}${lastLetter}`;
+};
+
+const getShuffledNumbers = () => {
+  const numbers = Array.from({ length: 10 }, (_, index) => index + 1);
+
+  for (let index = numbers.length - 1; index > 0; index -= 1) {
+    const randomIndex = Math.floor(Math.random() * (index + 1));
+    [numbers[index], numbers[randomIndex]] = [
+      numbers[randomIndex],
+      numbers[index],
+    ];
+  }
+
+  return numbers;
+};
+
+const generateVisitorCode = async (name: string) => {
+  const codeLetters = getCodeLetters(name);
+
+  for (const number of getShuffledNumbers()) {
+    const visitorCode = `${codeLetters}${number}`;
+    const matchingVisitors = await getDocs(
+      query(collection(db, "visitors"), where("visitorCode", "==", visitorCode)),
+    );
+
+    const codeIsInUse = matchingVisitors.docs.some((visitor) => {
+      const status = String(visitor.data().status ?? "");
+
+      return !signedOutStatuses.has(status);
+    });
+
+    if (!codeIsInUse) {
+      return visitorCode;
+    }
+  }
+
+  throw new Error("No available visitor code for these initials.");
+};
+
 export default function PublicVisitorRegistrationPage() {
   const [form, setForm] = useState<VisitorForm>(emptyForm);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [visitorCode, setVisitorCode] = useState("");
 
   const updateField = <K extends keyof VisitorForm>(
     field: K,
@@ -51,21 +106,31 @@ export default function PublicVisitorRegistrationPage() {
     setIsSubmitting(true);
 
     try {
+      const generatedVisitorCode = await generateVisitorCode(form.name.trim());
+
       await addDoc(collection(db, "visitors"), {
         name: form.name.trim(),
         phone: form.phone.trim(),
         company: form.company.trim(),
         purpose: form.purpose,
         staff: form.staff.trim(),
-        status: "Pending",
+        status: "Checked In",
+        visitorCode: generatedVisitorCode,
         checkIn: serverTimestamp(),
+        checkOut: null,
       });
 
       setForm(emptyForm);
+      setVisitorCode(generatedVisitorCode);
       setIsComplete(true);
-    } catch {
+    } catch (error) {
+      const message =
+        error instanceof Error && error.message.includes("No available")
+          ? "We couldn't create a unique sign-out code for those initials right now. Please ask the front desk for help."
+          : "We couldn't complete your check-in. Please ask the front desk for help.";
+
       setErrorMessage(
-        "We couldn't complete your check-in. Please ask the front desk for help.",
+        message,
       );
     } finally {
       setIsSubmitting(false);
@@ -105,6 +170,17 @@ export default function PublicVisitorRegistrationPage() {
               <p className="mt-3 max-w-sm text-sm leading-6 text-[#617773]">
                 Please have a seat or let the front desk know. Your host will be notified of your arrival.
               </p>
+              <div className="mt-6 w-full max-w-xs rounded-2xl border border-[#1b6b6126] bg-white p-5 shadow-[0_14px_35px_rgba(48,73,68,.08)]">
+                <p className="text-[.68rem] font-bold tracking-[.12em] text-[#1b6b61] uppercase">
+                  Your sign-out code
+                </p>
+                <p className="mt-2 font-mono text-4xl font-black tracking-[.18em] text-[#183b38]">
+                  {visitorCode}
+                </p>
+                <p className="mt-3 text-xs leading-5 text-[#617773]">
+                  Keep this code. You&rsquo;ll enter it on the logout page when you are leaving the company.
+                </p>
+              </div>
               <Link
                 href="/"
                 className="mt-8 cursor-pointer rounded-xl border border-[#1b6b6130] bg-white px-5 py-3 text-xs font-bold text-[#1b6b61] transition hover:-translate-y-0.5 hover:border-[#1b6b61] hover:shadow-md focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#1b6b614d]"

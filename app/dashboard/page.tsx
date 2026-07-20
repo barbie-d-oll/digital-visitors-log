@@ -8,15 +8,38 @@ import DashboardLayout from "../components/layouts/DashboardLayout";
 import StatCard from "../components/dashboard/StatCard";
 import VisitorChart from "../components/dashboard/VisitorChart";
 
+type FirestoreDate = Date | string | { toDate: () => Date } | null | undefined;
+
 interface Visitor {
   id: string;
   name: string;
   company: string;
   staff: string;
-  checkIn?: { toDate: () => Date };
+  checkIn?: FirestoreDate;
+  checkOut?: FirestoreDate;
   status: string;
   [key: string]: unknown;
 }
+
+const formatVisitorTime = (value: FirestoreDate) => {
+  if (!value) {
+    return "-";
+  }
+
+  if (value instanceof Date) {
+    return value.toLocaleTimeString();
+  }
+
+  if (typeof value === "string") {
+    const parsedDate = new Date(value);
+
+    return Number.isNaN(parsedDate.getTime())
+      ? value
+      : parsedDate.toLocaleTimeString();
+  }
+
+  return value.toDate().toLocaleTimeString();
+};
 
 export default function DashboardPage() {
   const [visitors, setVisitors] = useState<Visitor[]>([]);
@@ -111,7 +134,8 @@ export default function DashboardPage() {
                                 <th className="py-3">Name</th>
                                 <th>Company</th>
                                 <th>Staff</th>
-                                <th>Time</th>
+                                <th>Time In</th>
+                                <th>Time Out</th>
                                 <th>Status</th>
                             </tr>
                         </thead>
@@ -134,9 +158,11 @@ export default function DashboardPage() {
 </td>
 
 <td>
-  {visitor.checkIn?.toDate
-    ? visitor.checkIn.toDate().toLocaleTimeString()
-    : "-"}
+  {formatVisitorTime(visitor.checkIn)}
+</td>
+
+<td>
+  {formatVisitorTime(visitor.checkOut)}
 </td>
 
       <td className="text-green-600 font-semibold">
