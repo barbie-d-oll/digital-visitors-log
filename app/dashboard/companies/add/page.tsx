@@ -13,13 +13,19 @@ export default function AddCompanyPage() {
 
   async function saveCompany() {
     try {
-      await addDoc(collection(db, "companies"), {
+     const companyRef = await addDoc(collection(db, "companies"), {
         companyName,
         email,
         phone,
         address,
+        status: "active",
+        subscription: "trial",
         createdAt: new Date(),
+        updatedAt: new Date(),
+
       });
+
+      console.log(companyRef.id);
 
       alert("Company Added Successfully!");
 
@@ -30,6 +36,7 @@ export default function AddCompanyPage() {
     } catch (error) {
       console.error(error);
       alert("Failed to save company");
+      
     }
   }
 

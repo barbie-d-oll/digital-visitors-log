@@ -65,9 +65,9 @@ export default function DashboardPage() {
                 <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
 
                     <div className="xl:col-span-2 bg-white rounded-xl shadow p-6">
-                        <h3 className="text-lg font-semibold mb-4">
+                        {/* <h3 className="text-lg font-semibold mb-4">
                             Visitor Check-ins
-                        </h3>
+                        </h3> */}
 
                         <div className="h-[520px]">
                             <VisitorChart />
