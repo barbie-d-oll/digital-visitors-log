@@ -1,12 +1,13 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import {
   addDoc,
   collection,
   getDocs,
   query,
   serverTimestamp,
+  updateDoc,
   where,
 } from "firebase/firestore";
 import {
@@ -15,10 +16,12 @@ import {
   CheckCircle2,
   Loader2,
   LockKeyhole,
+  LogOut,
   Phone,
   UserRound,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { VisitorHeader } from "@/components/home/visitor-header";
 import { db } from "@/lib/firebase";
@@ -31,6 +34,8 @@ type VisitorForm = {
   staff: string;
 };
 
+type SmsStatus = "idle" | "sent" | "failed";
+
 const emptyForm: VisitorForm = {
   name: "",
   phone: "",
@@ -39,6 +44,8 @@ const emptyForm: VisitorForm = {
   staff: "",
 };
 
+const defaultReturnHomeSeconds = 15;
+const failedSmsReturnHomeSeconds = 30;
 const signedOutStatuses = new Set(["Signed Out", "Checked Out"]);
 
 const getCodeLetters = (name: string) => {
@@ -86,12 +93,43 @@ const generateVisitorCode = async (name: string) => {
   throw new Error("No available visitor code for these initials.");
 };
 
+const sendVisitorCodeSms = async ({
+  name,
+  phone,
+  visitorCode,
+}: {
+  name: string;
+  phone: string;
+  visitorCode: string;
+}) => {
+  const response = await fetch("/api/sms/visitor-code", {
+    body: JSON.stringify({ name, phone, visitorCode }),
+    headers: {
+      "Content-Type": "application/json",
+    },
+    method: "POST",
+  });
+
+  if (!response.ok) {
+    const data = (await response.json().catch(() => null)) as {
+      error?: string;
+    } | null;
+
+    throw new Error(data?.error ?? "SMS sending failed.");
+  }
+};
+
 export default function PublicVisitorRegistrationPage() {
+  const router = useRouter();
   const [form, setForm] = useState<VisitorForm>(emptyForm);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [visitorCode, setVisitorCode] = useState("");
+  const [smsStatus, setSmsStatus] = useState<SmsStatus>("idle");
+  const [secondsUntilHome, setSecondsUntilHome] = useState(
+    defaultReturnHomeSeconds,
+  );
 
   const updateField = <K extends keyof VisitorForm>(
     field: K,
@@ -100,17 +138,38 @@ export default function PublicVisitorRegistrationPage() {
     setForm((current) => ({ ...current, [field]: value }));
   };
 
+  useEffect(() => {
+    if (!isComplete) {
+      return;
+    }
+
+    if (secondsUntilHome <= 0) {
+      router.push("/");
+      return;
+    }
+
+    const timerId = window.setTimeout(() => {
+      setSecondsUntilHome((current) => current - 1);
+    }, 1000);
+
+    return () => window.clearTimeout(timerId);
+  }, [isComplete, router, secondsUntilHome]);
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setErrorMessage("");
+    setSmsStatus("idle");
     setIsSubmitting(true);
 
     try {
-      const generatedVisitorCode = await generateVisitorCode(form.name.trim());
+      const name = form.name.trim();
+      const phone = form.phone.trim();
+      const generatedVisitorCode = await generateVisitorCode(name);
+      let nextSmsStatus: SmsStatus = "idle";
 
-      await addDoc(collection(db, "visitors"), {
-        name: form.name.trim(),
-        phone: form.phone.trim(),
+      const visitorRef = await addDoc(collection(db, "visitors"), {
+        name,
+        phone,
         company: form.company.trim(),
         purpose: form.purpose,
         staff: form.staff.trim(),
@@ -118,10 +177,46 @@ export default function PublicVisitorRegistrationPage() {
         visitorCode: generatedVisitorCode,
         checkIn: serverTimestamp(),
         checkOut: null,
+        smsStatus: "Pending",
       });
+
+      try {
+        await sendVisitorCodeSms({
+          name,
+          phone,
+          visitorCode: generatedVisitorCode,
+        });
+
+        nextSmsStatus = "sent";
+        setSmsStatus(nextSmsStatus);
+        await updateDoc(visitorRef, {
+          smsSentAt: serverTimestamp(),
+          smsStatus: "Sent",
+        }).catch((updateError) => {
+          console.error("Error saving SMS status:", updateError);
+        });
+      } catch (smsError) {
+        const smsErrorMessage =
+          smsError instanceof Error ? smsError.message : "SMS sending failed.";
+
+        nextSmsStatus = "failed";
+        setSmsStatus(nextSmsStatus);
+        await updateDoc(visitorRef, {
+          smsError: smsErrorMessage,
+          smsFailedAt: serverTimestamp(),
+          smsStatus: "Failed",
+        }).catch((updateError) => {
+          console.error("Error saving SMS status:", updateError);
+        });
+      }
 
       setForm(emptyForm);
       setVisitorCode(generatedVisitorCode);
+      setSecondsUntilHome(
+        nextSmsStatus === "failed"
+          ? failedSmsReturnHomeSeconds
+          : defaultReturnHomeSeconds,
+      );
       setIsComplete(true);
     } catch (error) {
       const message =
@@ -180,7 +275,23 @@ export default function PublicVisitorRegistrationPage() {
                 <p className="mt-3 text-xs leading-5 text-[#617773]">
                   Keep this code. You&rsquo;ll enter it on the logout page when you are leaving the company.
                 </p>
+                <p className="mt-4 rounded-xl bg-[#f6fbf8] px-4 py-3 text-xs font-semibold text-[#1b6b61]">
+                  This screen will automatically go off in{" "}
+                  <span className="font-black">{secondsUntilHome}</span>{" "}
+                  seconds.
+                </p>
+                 
               </div>
+              {smsStatus === "sent" ? (
+                <p className="mt-4 max-w-sm rounded-xl border border-[#1b6b6126] bg-[#f6fbf8] px-4 py-3 text-xs font-semibold text-[#1b6b61]">
+                  We also sent this code to your phone number by SMS.
+                </p>
+              ) : null}
+              {smsStatus === "failed" ? (
+                <p className="mt-4 max-w-sm rounded-xl border border-[#d5b40040] bg-[#fff8d8] px-4 py-3 text-xs font-semibold text-[#7a6410]">
+                  Your check-in was saved, but the SMS could not be sent. Please keep the code shown here.
+                </p>
+              ) : null}
               <Link
                 href="/"
                 className="mt-8 cursor-pointer rounded-xl border border-[#1b6b6130] bg-white px-5 py-3 text-xs font-bold text-[#1b6b61] transition hover:-translate-y-0.5 hover:border-[#1b6b61] hover:shadow-md focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#1b6b614d]"
