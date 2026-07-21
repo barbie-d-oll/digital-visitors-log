@@ -11,9 +11,9 @@ import {
   LockKeyhole,
   Mail,
   ScanLine,
-  ShieldCheck,
   UserRoundCheck,
 } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import {
@@ -278,6 +278,21 @@ const HomeLayoutPage = () => {
                 </span>
                 Secure records
               </div>
+            </div>
+
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link
+                href="/register"
+                className="flex min-h-12 items-center justify-center gap-2 rounded-xl bg-[#2196F3] px-5 text-sm font-bold text-white shadow-[0_13px_25px_rgba(33,150,243,.2)] transition hover:-translate-y-0.5 hover:bg-[#1976d2] hover:shadow-[0_16px_30px_rgba(33,150,243,.28)] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#2196F366]"
+              >
+                Check in visitor <ArrowRight size={17} />
+              </Link>
+              <Link
+                href="/logout"
+                className="flex min-h-12 items-center justify-center rounded-xl border border-[#1b6b6126] bg-white px-5 text-sm font-bold text-[#1b6b61] shadow-[0_8px_22px_rgba(27,107,97,.08)] transition hover:-translate-y-0.5 hover:border-[#1b6b6152] hover:bg-[#f8fbf9] hover:shadow-[0_12px_26px_rgba(27,107,97,.14)] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#1b6b614d]"
+              >
+                Visitor sign out
+              </Link>
             </div>
           </div>
           {/* signing option */}
