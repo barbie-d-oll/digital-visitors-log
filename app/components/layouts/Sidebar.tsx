@@ -49,7 +49,7 @@ export default function Sidebar() {
   ];
 
   return (
-    <aside className="fixed top-0 left-0 w-64 h-screen bg-slate-900 text-white flex flex-col shadow-lg">
+    <aside className="fixed top-0 left-0 flex h-screen w-64 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground shadow-lg">
 
       <div className="p-6">
 
@@ -57,7 +57,7 @@ export default function Sidebar() {
           Digital Visitor Log
         </h1>
 
-        <p className="text-gray-400 text-sm mt-2 mb-8">
+        <p className="mt-2 mb-8 text-sm text-sidebar-foreground/60">
           MAIN MENU
         </p>
 
@@ -74,8 +74,8 @@ export default function Sidebar() {
                 className={`flex items-center gap-3 px-4 py-3 rounded-lg transition
                   ${
                     active
-                      ? "bg-blue-600 text-white"
-                      : "hover:bg-slate-800 text-gray-300"
+                      ? "bg-sidebar-primary text-sidebar-primary-foreground"
+                      : "text-sidebar-foreground/75 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                   }`}
               >
                 <Icon size={20} />
@@ -88,17 +88,17 @@ export default function Sidebar() {
 
       </div>
 
-      <div className="mt-auto border-t border-slate-700 p-6">
+      <div className="mt-auto border-t border-sidebar-border p-6">
 
         <p className="font-semibold">
           Barbara Logah
         </p>
 
-        <p className="text-sm text-gray-400 mb-4">
+        <p className="mb-4 text-sm text-sidebar-foreground/60">
           Company Administrator
         </p>
 
-        <button className="w-full flex items-center justify-center gap-2 bg-red-600 py-2 rounded-lg hover:bg-red-700 transition">
+        <button className="flex w-full items-center justify-center gap-2 rounded-lg bg-destructive py-2 text-destructive-foreground transition hover:bg-destructive/90">
           <LogOut size={18} />
           Logout
         </button>

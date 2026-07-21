@@ -6,11 +6,11 @@ export default function SettingsPage() {
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold">Settings</h1>
-          <p className="text-gray-500">Configure dashboard preferences</p>
+          <p className="text-muted-foreground">Configure dashboard preferences</p>
         </div>
 
-        <div className="bg-white rounded-xl shadow p-6">
-          <p className="text-gray-600">Settings content will be added soon.</p>
+        <div className="rounded-xl border border-border bg-card p-6 shadow">
+          <p className="text-muted-foreground">Settings content will be added soon.</p>
         </div>
       </div>
     </DashboardLayout>

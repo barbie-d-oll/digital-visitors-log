@@ -6,47 +6,56 @@ import { db } from "@/lib/firebase";
 import DashboardLayout from "../../components/layouts/DashboardLayout";
 import Link from "next/link";
 
+type StaffMember = {
+  id: string;
+  department?: string;
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+};
+
 export default function StaffPage() {
-  const [staff, setStaff] = useState<any[]>([]);
+  const [staff, setStaff] = useState<StaffMember[]>([]);
 
   useEffect(() => {
+    async function loadStaff() {
+      try {
+        const snapshot = await getDocs(collection(db, "staff"));
+
+        const data = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        })) as StaffMember[];
+
+        setStaff(data);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
     loadStaff();
   }, []);
-
-  async function loadStaff() {
-    try {
-      const snapshot = await getDocs(collection(db, "staff"));
-
-      const data = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-
-      setStaff(data);
-    } catch (error) {
-      console.error(error);
-    }
-  }
 
   return (
     <DashboardLayout>
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl font-bold">Staff Management</h1>
-          <p className="text-gray-500">
+          <p className="text-muted-foreground">
             Add and manage company staff
           </p>
         </div>
 
         <Link
           href="/dashboard/staff/add"
-          className="bg-blue-600 text-white px-5 py-3 rounded-lg hover:bg-blue-700"
+          className="rounded-lg bg-primary px-5 py-3 text-primary-foreground hover:bg-primary/90"
         >
           + Add Staff
         </Link>
       </div>
 
-      <div className="bg-white rounded-xl shadow p-6">
+      <div className="rounded-xl border border-border bg-card p-6 shadow">
         <table className="w-full">
 
           <thead>
@@ -61,7 +70,7 @@ export default function StaffPage() {
           </thead>
 
           <tbody>
-            {staff.map((member: any) => (
+            {staff.map((member) => (
               <tr key={member.id} className="border-b">
 
                 <td className="py-4">
@@ -74,16 +83,16 @@ export default function StaffPage() {
 
                 <td>{member.email}</td>
 
-                <td className="text-green-600 font-semibold">
+                <td className="font-semibold text-brand">
                   Active
                 </td>
 
                 <td className="space-x-3">
-                  <button className="text-blue-600">
+                  <button className="text-primary">
                     Edit
                   </button>
 
-                  <button className="text-red-600">
+                  <button className="text-destructive">
                     Delete
                   </button>
                 </td>

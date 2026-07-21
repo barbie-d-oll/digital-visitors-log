@@ -39,7 +39,7 @@ export default function RegisterVisitorPage() {
       <div className="max-w-4xl">
         <h1 className="text-3xl font-bold mb-6">Register Visitor</h1>
 
-        <div className="bg-white rounded-xl shadow p-8">
+        <div className="rounded-xl border border-border bg-card p-8 shadow">
 
           <div className="grid grid-cols-2 gap-6">
 
@@ -83,7 +83,7 @@ export default function RegisterVisitorPage() {
 
           <button
             onClick={registerVisitor}
-            className="mt-8 bg-blue-600 text-white px-6 py-3 rounded-lg"
+            className="mt-8 rounded-lg bg-primary px-6 py-3 text-primary-foreground"
           >
             Register Visitor
           </button>

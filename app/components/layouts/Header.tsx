@@ -1,13 +1,14 @@
 import { Bell, Search } from "lucide-react"
 import FullscreenButton from "@/components/common/Fullscreen"
+import { ModeToggle } from "@/components/common/Toggle"
 
 export default function Header() {
   return (
-    <header className="fixed top-0 left-64 right-0 h-20 bg-white shadow-sm flex items-center justify-between px-8 z-40">
+    <header className="fixed top-0 right-0 left-64 z-40 flex h-20 items-center justify-between border-b border-border bg-card px-8 shadow-sm">
 
       {/* Left Side */}
       <div>
-        <h1 className="text-3xl font-bold text-slate-800">
+        <h1 className="text-3xl font-bold text-foreground">
     Dashboard
 </h1>
       </div>
@@ -16,22 +17,23 @@ export default function Header() {
       <div className="flex items-center gap-4">
 
         {/* Search */}
-        <div className="flex items-center bg-gray-100 px-4 py-2 rounded-lg">
+        <div className="flex items-center rounded-lg border border-input bg-background px-4 py-2">
 
-          <Search size={18} className="text-gray-500" />
+          <Search size={18} className="text-muted-foreground" />
 
           <input
             type="text"
             placeholder="Search..."
-            className="bg-transparent outline-none ml-2"
+            className="ml-2 bg-transparent text-foreground outline-none placeholder:text-muted-foreground"
           />
 
         </div>
+        <ModeToggle />
         {/* Fullscreen */}
         <FullscreenButton />
 
         {/* Notifications */}
-        <button className="bg-gray-100 p-3 rounded-lg hover:bg-gray-200">
+        <button className="rounded-lg border border-input bg-background p-3 transition hover:bg-accent">
           <Bell size={20} />
         </button>
 
@@ -41,7 +43,7 @@ export default function Header() {
             Barbara Logah
           </h3>
 
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-muted-foreground">
             Company Administrator
           </p>
         </div>

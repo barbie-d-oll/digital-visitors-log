@@ -38,7 +38,7 @@ export default function AddCompanyPage() {
       <div className="max-w-3xl">
         <h1 className="text-3xl font-bold mb-6">Add Company</h1>
 
-        <div className="bg-white rounded-xl shadow p-8 space-y-6">
+        <div className="space-y-6 rounded-xl border border-border bg-card p-8 shadow">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block mb-2 font-medium">Company Name</label>
@@ -88,7 +88,7 @@ export default function AddCompanyPage() {
           <button
             type="button"
             onClick={saveCompany}
-            className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700"
+            className="rounded-lg bg-primary px-6 py-3 text-primary-foreground hover:bg-primary/90"
           >
             Save Company
           </button>

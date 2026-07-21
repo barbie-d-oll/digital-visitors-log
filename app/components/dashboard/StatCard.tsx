@@ -8,13 +8,13 @@ export default function StatCard({
     value,
 }: StatCardProps) {
     return (
-        <div className="bg-white rounded-xl shadow-sm p-6 boarder border-gray-200">
+        <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
 
-            <p className="text-gray-500 text-sm">
+            <p className="text-sm text-muted-foreground">
                 {title}
             </p>
 
-            <h2 className="text-4xl font-bold text-slate-800 mt-3">
+            <h2 className="mt-3 text-4xl font-bold text-foreground">
                 {value}
             </h2>
 

@@ -8,20 +8,20 @@ export default function CompaniesPage() {
             <div className="flex items-center justify-between mb-8">
                 <div>
                     <h1 className="text-3xl font-bold">Companies</h1>
-                    <p className="text-gray-500">
+                    <p className="text-muted-foreground">
                         Manage registered companies
                     </p>
                 </div>
 
                 <Link
                     href="/dashboard/companies/add"
-                    className="bg-blue-600 text-white px-5 py-3 rounded-lg hover:bg-blue-700"
+                    className="rounded-lg bg-primary px-5 py-3 text-primary-foreground hover:bg-primary/90"
                 >
                     + Add Company
                 </Link>
             </div>
 
-            <div className="bg-white rounded-xl shadow p-6">
+            <div className="rounded-xl border border-border bg-card p-6 shadow">
 
                 <table className="w-full">
 
@@ -41,7 +41,7 @@ export default function CompaniesPage() {
                             <td className="py-4">HWS Company</td>
                             <td>admin@hws.com</td>
                             <td>0240000000</td>
-                            <td className="text-green-600">Active</td>
+                            <td className="text-brand">Active</td>
                             <td>
                                 <button>Edit</button>
                             </td>

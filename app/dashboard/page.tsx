@@ -75,7 +75,7 @@ export default function DashboardPage() {
         <DashboardLayout>
             <div className="space-y-8">
                 <div>
-                    <p className="text-gray-500">
+                    <p className="text-muted-foreground">
                         Welcome to the dashboard, 👋
                     </p>
                 </div>
@@ -87,7 +87,7 @@ export default function DashboardPage() {
 
                 <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
 
-                    <div className="xl:col-span-2 bg-white rounded-xl shadow p-6">
+                    <div className="rounded-xl border border-border bg-card p-6 shadow xl:col-span-2">
                         <h3 className="text-lg font-semibold mb-4">
                             Visitor Check-ins
                         </h3>
@@ -97,25 +97,25 @@ export default function DashboardPage() {
                         </div>
                     </div>
 
-                    <div className="bg-white rounded-xl shadow p-6">
+                    <div className="rounded-xl border border-border bg-card p-6 shadow">
                         <h3 className="text-lg font-semibold mb-4">
                             Quick Actions
                         </h3>
 
                         <div className="space-y-3">
-                            <Link href="/dashboard/visitor/register" className="block w-full bg-blue-600 text-white rounded-lg py-3 text-center">
+                            <Link href="/dashboard/visitor/register" className="block w-full rounded-lg bg-primary py-3 text-center text-primary-foreground">
                                 Register Visitor
                             </Link>
 
-                            <Link href="/dashboard/staff/add" className="block w-full bg-green-600 text-white rounded-lg py-3 text-center">
+                            <Link href="/dashboard/staff/add" className="block w-full rounded-lg bg-secondary py-3 text-center text-secondary-foreground">
                                 Add Staff
                             </Link>
 
-                            <Link href="/dashboard/visitor" className="block w-full bg-orange-500 text-white rounded-lg py-3 text-center">
+                            <Link href="/dashboard/visitor" className="block w-full rounded-lg bg-accent py-3 text-center text-accent-foreground">
                                 Visitor History
                             </Link>
 
-                            <Link href="/dashboard/companies" className="block w-full bg-slate-800 text-white rounded-lg py-3 text-center">
+                            <Link href="/dashboard/companies" className="block w-full rounded-lg bg-brand py-3 text-center text-brand-foreground">
                                 Companies
                             </Link>
                         </div>
@@ -123,7 +123,7 @@ export default function DashboardPage() {
 
                 </div>
 
-                <div className="bg-white rounded-xl shadow p-6">
+                <div className="rounded-xl border border-border bg-card p-6 shadow">
                     <h3 className="text-lg font-semibold mb-4">
                         Recent Visitors
                     </h3>
@@ -165,7 +165,7 @@ export default function DashboardPage() {
   {formatVisitorTime(visitor.checkOut)}
 </td>
 
-      <td className="text-green-600 font-semibold">
+      <td className="font-semibold text-brand">
         {visitor.status}
       </td>
       </tr>

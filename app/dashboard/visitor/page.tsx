@@ -7,20 +7,20 @@ export default function VisitorsPage() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl font-bold">Visitors</h1>
-          <p className="text-gray-500">
+          <p className="text-muted-foreground">
             Register and manage visitors
           </p>
         </div>
 
         <Link
           href="/dashboard/visitor/register"
-          className="bg-blue-600 text-white px-5 py-3 rounded-lg hover:bg-blue-700">
+          className="rounded-lg bg-primary px-5 py-3 text-primary-foreground hover:bg-primary/90">
 
           + Register Visitor
         </Link>
       </div>
 
-      <div className="bg-white rounded-xl shadow p-6 overflow-x-auto">
+      <div className="overflow-x-auto rounded-xl border border-border bg-card p-6 shadow">
 
         <table className="w-full">
 
@@ -42,7 +42,7 @@ export default function VisitorsPage() {
               <td>Barbara Logah</td>
               <td>Meeting</td>
               <td>09:15 AM</td>
-              <td className="text-green-600 font-semibold">
+              <td className="font-semibold text-brand">
                 Checked In
               </td>
             </tr>

@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { PwaServiceWorker } from "@/components/pwa-service-worker";
 import "./globals.css";
+import { ThemeProvider } from "@/components/theme/Theme-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -41,12 +42,20 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en" suppressHydrationWarning
+      lang="en"
+      suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <PwaServiceWorker />
-        {children}
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <PwaServiceWorker />
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -46,7 +46,7 @@ export default function VisitorChart() {
             Visitor Activity
           </h2>
 
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-muted-foreground">
             Last 7 Days
           </p>
         </div>
@@ -54,7 +54,7 @@ export default function VisitorChart() {
         <select
           value={type}
           onChange={(e) => setType(e.target.value)}
-          className="border rounded-lg px-4 py-2"
+          className="rounded-lg border border-input bg-background px-4 py-2 text-foreground"
         >
           <option value="checkins">
             Check-ins
@@ -81,7 +81,7 @@ export default function VisitorChart() {
           <Line
             type="monotone"
             dataKey="visitors"
-            stroke="#2563eb"
+            stroke="var(--primary)"
             strokeWidth={4}
             dot={{ r: 5 }}
             activeDot={{ r: 8 }}
@@ -92,9 +92,9 @@ export default function VisitorChart() {
 
       <div className="grid grid-cols-4 gap-4 mt-8">
 
-        <div className="bg-blue-50 rounded-lg p-4">
+        <div className="rounded-lg bg-secondary p-4">
 
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-muted-foreground">
             Today&apos;s Visitors
           </p>
 
@@ -104,9 +104,9 @@ export default function VisitorChart() {
 
         </div>
 
-        <div className="bg-green-50 rounded-lg p-4">
+        <div className="rounded-lg bg-secondary p-4">
 
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-muted-foreground">
             This Week
           </p>
 
@@ -116,9 +116,9 @@ export default function VisitorChart() {
 
         </div>
 
-        <div className="bg-yellow-50 rounded-lg p-4">
+        <div className="rounded-lg bg-secondary p-4">
 
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-muted-foreground">
             Average / Day
           </p>
 
@@ -128,9 +128,9 @@ export default function VisitorChart() {
 
         </div>
 
-        <div className="bg-purple-50 rounded-lg p-4">
+        <div className="rounded-lg bg-secondary p-4">
 
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-muted-foreground">
             Peak Day
           </p>
 

@@ -44,7 +44,7 @@ export default function AddStaffPage() {
       <div className="max-w-4xl">
         <h1 className="text-3xl font-bold mb-6">Add Staff</h1>
 
-        <div className="bg-white rounded-xl shadow p-8">
+        <div className="rounded-xl border border-border bg-card p-8 shadow">
           <div className="grid grid-cols-2 gap-6">
 
             <div>
@@ -107,7 +107,7 @@ export default function AddStaffPage() {
           <button
             type="button"
             onClick={saveStaff}
-            className="mt-8 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700"
+            className="mt-8 rounded-lg bg-primary px-6 py-3 text-primary-foreground hover:bg-primary/90"
           >
             Save Staff
           </button>
