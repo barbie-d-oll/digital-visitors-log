@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">Visitor Log app icon</title>
+  <desc id="desc">Gold and green Visitor Log mobile app icon.</desc>
+  <rect width="512" height="512" rx="112" fill="#1b6b61"/>
+  <circle cx="256" cy="256" r="178" fill="#ffd700"/>
+  <circle cx="256" cy="218" r="72" fill="#ffffff"/>
+  <path d="M132 390c24-74 69-112 124-112s100 38 124 112" fill="#ffffff"/>
+  <path d="m310 335 29 29 61-70" fill="none" stroke="#1b6b61" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

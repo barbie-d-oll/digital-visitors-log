@@ -16,7 +16,6 @@ import {
   CheckCircle2,
   Loader2,
   LockKeyhole,
-  LogOut,
   Phone,
   UserRound,
 } from "lucide-react";

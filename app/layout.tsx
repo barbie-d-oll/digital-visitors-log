@@ -1,5 +1,6 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { PwaServiceWorker } from "@/components/pwa-service-worker";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -15,6 +16,22 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Visitor Log | Digital Welcome Desk",
   description: "A simple, secure, and welcoming way to manage every visitor.",
+  applicationName: "Visitor Log",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Visitor Log",
+  },
+  icons: {
+    icon: "/icon",
+    shortcut: "/icon",
+    apple: "/apple-icon",
+  },
+  manifest: "/manifest.webmanifest",
+};
+
+export const viewport: Viewport = {
+  themeColor: "#1b6b61",
 };
 
 export default function RootLayout({
@@ -24,10 +41,13 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
+      lang="en" suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <PwaServiceWorker />
+        {children}
+      </body>
     </html>
   );
 }

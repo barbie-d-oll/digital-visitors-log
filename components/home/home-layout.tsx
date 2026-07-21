@@ -3,6 +3,7 @@
 import { FormEvent, useState, useSyncExternalStore } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { QRCodeSVG } from "qrcode.react";
+import FullscreenButton from "@/components/common/Fullscreen";
 import {
   ArrowRight,
   Check,
@@ -104,15 +105,19 @@ const HomeLayoutPage = () => {
             </div>
           </div>
 
-          <DialogTrigger asChild>
-            <button
-              type="button"
-              className="flex min-h-11 shrink-0 cursor-pointer items-center justify-center gap-2 rounded-xl border border-[#1b6b6126] bg-white/90 px-4  text-[.78rem] font-bold text-[#1b6b61] shadow-[0_8px_22px_rgba(27,107,97,.1)] backdrop-blur transition duration-200 hover:-translate-y-0.5 hover:border-[#1b6b6152] hover:bg-[#f8fbf9] hover:shadow-[0_12px_26px_rgba(27,107,97,.15)] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#1b6b614d] max-[480px]:px-3"
-            >
-              <LockKeyhole size={16} aria-hidden="true" />
-              <span>Sign in</span>
-            </button>
-          </DialogTrigger>
+          <div className="flex items-center gap-3">
+            {/* FullScreen */}
+            <FullscreenButton />
+            <DialogTrigger asChild>
+              <button
+                type="button"
+                className="flex min-h-11 shrink-0 cursor-pointer items-center justify-center gap-2 rounded-xl border border-[#1b6b6126] bg-white/90 px-4  text-[.78rem] font-bold text-[#1b6b61] shadow-[0_8px_22px_rgba(27,107,97,.1)] backdrop-blur transition duration-200 hover:-translate-y-0.5 hover:border-[#1b6b6152] hover:bg-[#f8fbf9] hover:shadow-[0_12px_26px_rgba(27,107,97,.15)] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#1b6b614d] max-[480px]:px-3"
+              >
+                <LockKeyhole size={16} aria-hidden="true" />
+                <span>Sign in</span>
+              </button>
+            </DialogTrigger>
+          </div>
         </header>
 
         <DialogContent className="max-h-[calc(100svh-2rem)] w-[min(calc(100%-2rem),29rem)] max-w-[29rem] gap-0 overflow-y-auto rounded-[1.5rem] border border-[#20534c1f] bg-[#fffefb] p-0 text-[#183b38] shadow-[0_35px_90px_rgba(24,59,56,.28)] ring-0">

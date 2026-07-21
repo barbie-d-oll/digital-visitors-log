@@ -1,4 +1,5 @@
-import { Bell, Search } from "lucide-react";
+import { Bell, Search } from "lucide-react"
+import FullscreenButton from "@/components/common/Fullscreen"
 
 export default function Header() {
   return (
@@ -26,6 +27,8 @@ export default function Header() {
           />
 
         </div>
+        {/* Fullscreen */}
+        <FullscreenButton />
 
         {/* Notifications */}
         <button className="bg-gray-100 p-3 rounded-lg hover:bg-gray-200">
