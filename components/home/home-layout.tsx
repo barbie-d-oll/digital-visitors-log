@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState, useSyncExternalStore } from "react";
+import { FormEvent, useState } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { QRCodeSVG } from "qrcode.react";
 import FullscreenButton from "@/components/common/Fullscreen";
@@ -25,8 +25,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { auth } from "@/lib/firebase";
+import { auth, db } from "@/lib/firebase";
 import { ModeToggle } from "@/components/common/Toggle";
+import { doc, getDoc } from "firebase/firestore";
 
 
 const errorMessages: Record<string, string> = {
@@ -34,10 +35,6 @@ const errorMessages: Record<string, string> = {
   "auth/invalid-email": "Please enter a valid email address.",
   "auth/too-many-requests": "Too many attempts. Please wait a moment and try again.",
 };
-
-const subscribeToOrigin = () => () => undefined;
-const getRegistrationUrl = () => `${window.location.origin}/register`;
-const getServerRegistrationUrl = () => "/register";
 
 const HomeLayoutPage = () => {
   const router = useRouter();
@@ -47,11 +44,7 @@ const HomeLayoutPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const registrationUrl = useSyncExternalStore(
-    subscribeToOrigin,
-    getRegistrationUrl,
-    getServerRegistrationUrl,
-  );
+  const registrationUrl = "/register";
 
   const handleLogin = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();

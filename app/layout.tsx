@@ -24,11 +24,10 @@ export const metadata: Metadata = {
     title: "Visitor Log",
   },
   icons: {
-    icon: "/icon",
-    shortcut: "/icon",
-    apple: "/apple-icon",
+    icon: "/icon.svg",
+    shortcut: "/icon.svg",
+    apple: "/apple-icon.tsx",
   },
-  manifest: "/manifest.webmanifest",
 };
 
 export const viewport: Viewport = {

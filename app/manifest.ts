@@ -9,21 +9,26 @@ export default function manifest(): MetadataRoute.Manifest {
     start_url: "/",
     scope: "/",
     display: "standalone",
-    orientation: "portrait",
+    orientation: "portrait-primary",
     background_color: "#ffffff",
     theme_color: "#1b6b61",
     icons: [
       {
-        src: "/icon",
-        sizes: "512x512",
-        type: "image/png",
+        src: "/icon.svg",
+        sizes: "any",
+        type: "image/svg+xml",
         purpose: "any",
       },
       {
-        src: "/icon",
-        sizes: "512x512",
-        type: "image/png",
+        src: "/icon.svg",
+        sizes: "any",
+        type: "image/svg+xml",
         purpose: "maskable",
+      },
+      {
+        src: "/apple-icon.tsx",
+        sizes: "180x180",
+        type: "image/png",
       },
     ],
     shortcuts: [
@@ -34,8 +39,9 @@ export default function manifest(): MetadataRoute.Manifest {
         url: "/register",
         icons: [
           {
-            src: "/icon",
-            sizes: "512x512",
+            src: "/icon.svg",
+            sizes: "any",
+            type: "image/svg+xml",
           },
         ],
       },
@@ -46,8 +52,9 @@ export default function manifest(): MetadataRoute.Manifest {
         url: "/logout",
         icons: [
           {
-            src: "/icon",
-            sizes: "512x512",
+            src: "/icon.svg",
+            sizes: "any",
+            type: "image/svg+xml",
           },
         ],
       },
