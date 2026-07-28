@@ -18,11 +18,20 @@ export default function AddStaffPage() {
       await addDoc(collection(db, "staff"), {
         firstName,
         lastName,
+        fullName: `${firstName} ${lastName}`,
         email,
         phone,
         department,
         position,
+
+        companyId: "your-company-id", // Replace with actual company ID
+        status: "active",
+        notificationPreferences: {
+          email: true,
+          sms: true,
+        },
         createdAt: new Date(),
+        updatedAt: new Date(),
       });
 
       alert("Staff Added Successfully!");
