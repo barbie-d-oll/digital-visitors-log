@@ -21,7 +21,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { auth } from "@/lib/firebase";
+import { auth, db } from "@/lib/firebase";
+import { doc, getDoc } from "firebase/firestore";
 
 const errorMessages: Record<string, string> = {
   "auth/invalid-credential": "That email or password doesn't look right.",
@@ -44,9 +45,19 @@ export function VisitorHeader() {
     setIsLoading(true);
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const credential = await signInWithEmailAndPassword(auth, email, password);
+      const userRef = doc(db, "users", credential.user.uid);
+      const userSnap = await getDoc(userRef);
+      const profile = userSnap.exists() ? userSnap.data() : null;
+      const normalizedRole =
+        typeof profile?.role === "string" && profile.role.trim()
+          ? profile.role
+          : "admin";
+
       setIsLoginOpen(false);
-      router.push("/dashboard");
+      router.replace(
+        normalizedRole === "super_admin" ? "/super-admin" : "/dashboard"
+      );
     } catch (error: unknown) {
       const code =
         typeof error === "object" && error !== null && "code" in error

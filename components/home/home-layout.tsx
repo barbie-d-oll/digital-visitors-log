@@ -53,22 +53,18 @@ const HomeLayoutPage = () => {
 
     try {
       const credential = await signInWithEmailAndPassword(auth, email, password);
-      // const user = credential.user.uid;
       const userRef = doc(db, "users", credential.user.uid);
       const userSnap = await getDoc(userRef);
+      const profile = userSnap.exists() ? userSnap.data() : null;
+      const normalizedRole =
+        typeof profile?.role === "string" && profile.role.trim()
+          ? profile.role
+          : "admin";
 
-      if (!userSnap.exists()) {
-        throw new Error("User profile not found");
-      }
-      // Do something with userData
-      const userData = userSnap.data();
       setIsLoginOpen(false);
-
-      if (userData.role === "super_admin") {
-        router.push("/super-admin");
-    } else {
-        router.push("/dashboard");
-      }
+      router.replace(
+        normalizedRole === "super_admin" ? "/super-admin" : "/dashboard"
+      );
     } catch (error: unknown) {
       const code =
         typeof error === "object" && error !== null && "code" in error

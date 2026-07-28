@@ -52,22 +52,32 @@ export function AuthProvider({
         try {
           const userRef = doc(db, "users", firebaseUser.uid);
           const userSnap = await getDoc(userRef);
+          const profile = userSnap.exists() ? userSnap.data() : null;
+          const normalizedRole =
+            typeof profile?.role === "string" && profile.role.trim()
+              ? profile.role
+              : "admin";
 
-          if (userSnap.exists()) {
-            const data = userSnap.data();
-
-            setUser({
-              uid: firebaseUser.uid,
-              email: firebaseUser.email || "",
-              role: data.role,
-              companyId: data.companyId,
-              companyName: data.companyName,
-            });
-          } else {
-            setUser(null);
-          }
+          setUser({
+            uid: firebaseUser.uid,
+            email: firebaseUser.email || "",
+            role: normalizedRole,
+            companyId:
+              typeof profile?.companyId === "string" ? profile.companyId : "",
+            companyName:
+              typeof profile?.companyName === "string"
+                ? profile.companyName
+                : "",
+          });
         } catch (err) {
-          console.error(err);
+          console.error("Unable to load auth profile:", err);
+          setUser({
+            uid: firebaseUser.uid,
+            email: firebaseUser.email || "",
+            role: "admin",
+            companyId: "",
+            companyName: "",
+          });
         } finally {
           setLoading(false);
         }
