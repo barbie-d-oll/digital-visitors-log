@@ -161,16 +161,17 @@ API Routes
 
 Example:
 
-```
-/screenshots
+## Home Page
 
 ![home](public/image.png)
- 
+
+## Visitor SigUp
+
 ![alt text](public/image-2.png)
 
+## Visitors Registration
 ![alt text](public/image-1.png)
 
-```
 
 ---
 
