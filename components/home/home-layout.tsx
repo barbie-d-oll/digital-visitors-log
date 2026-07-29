@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState,  useSyncExternalStore } from "react";
+import { FormEvent, useState,   useSyncExternalStore } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { QRCodeSVG } from "qrcode.react";
 import FullscreenButton from "@/components/common/Fullscreen";
