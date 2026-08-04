@@ -14,19 +14,19 @@ export default function manifest(): MetadataRoute.Manifest {
     theme_color: "#1b6b61",
     icons: [
       {
-        src: "/icon.svg",
-        sizes: "any",
-        type: "image/svg+xml",
+        src: "/icon",
+        sizes: "512x512",
+        type: "image/png",
         purpose: "any",
       },
       {
-        src: "/icon.svg",
-        sizes: "any",
+        src: "/pwa-icon.svg",
+        sizes: "512x512",
         type: "image/svg+xml",
         purpose: "maskable",
       },
       {
-        src: "/apple-icon.tsx",
+        src: "/apple-icon",
         sizes: "180x180",
         type: "image/png",
       },
@@ -39,9 +39,9 @@ export default function manifest(): MetadataRoute.Manifest {
         url: "/register",
         icons: [
           {
-            src: "/icon.svg",
-            sizes: "any",
-            type: "image/svg+xml",
+            src: "/icon",
+            sizes: "512x512",
+            type: "image/png",
           },
         ],
       },
@@ -52,9 +52,9 @@ export default function manifest(): MetadataRoute.Manifest {
         url: "/logout",
         icons: [
           {
-            src: "/icon.svg",
-            sizes: "any",
-            type: "image/svg+xml",
+            src: "/icon",
+            sizes: "512x512",
+            type: "image/png",
           },
         ],
       },
