@@ -10,9 +10,18 @@ import {
   FileText,
   Settings,
   LogOut,
+  X,
 } from "lucide-react";
 
-export default function Sidebar() {
+type SidebarProps = {
+  sidebarOpen: boolean;
+  setSidebarOpen: (open: boolean) => void;
+};
+
+export default function Sidebar({
+  sidebarOpen,
+  setSidebarOpen,
+}: SidebarProps) {
   const pathname = usePathname();
 
   const menu = [
@@ -49,62 +58,100 @@ export default function Sidebar() {
   ];
 
   return (
-    <aside className="fixed top-0 left-0 flex h-screen w-64 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground shadow-lg">
+    <>
+      {/* Mobile overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/40 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
 
-      <div className="p-6">
+      <aside
+        className={`
+          fixed top-0 left-0 z-50
+          flex h-screen w-64 flex-col
+          border-r border-sidebar-border
+          bg-sidebar
+          text-sidebar-foreground
+          shadow-lg
+          transition-transform duration-300
 
-        <h1 className="text-2xl font-bold">
-          Digital Visitor Log
-        </h1>
+          ${
+            sidebarOpen
+              ? "translate-x-0"
+              : "-translate-x-full"
+          }
 
-        <p className="mt-2 mb-8 text-sm text-sidebar-foreground/60">
-          MAIN MENU
-        </p>
+          md:translate-x-0
+        `}
+      >
+        <div className="flex justify-end p-4 md:hidden">
 
-        <nav className="space-y-2">
+          <button
+            onClick={() => setSidebarOpen(false)}
+          >
+            <X size={24} />
+          </button>
 
-          {menu.map((item) => {
-            const Icon = item.icon;
-            const active = pathname === item.href;
+        </div>
 
-            return (
-              <Link
-                key={item.name}
-                href={item.href}
-                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition
-                  ${
-                    active
-                      ? "bg-sidebar-primary text-sidebar-primary-foreground"
-                      : "text-sidebar-foreground/75 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                  }`}
-              >
-                <Icon size={20} />
-                {item.name}
-              </Link>
-            );
-          })}
+        <div className="px-6 pb-6">
 
-        </nav>
+          <h1 className="text-2xl font-bold">
+            Digital Visitor Log
+          </h1>
 
-      </div>
+          <p className="mt-2 mb-8 text-sm text-sidebar-foreground/60">
+            MAIN MENU
+          </p>
 
-      <div className="mt-auto border-t border-sidebar-border p-6">
+          <nav className="space-y-2">
 
-        <p className="font-semibold">
-          Barbara Logah
-        </p>
+            {menu.map((item) => {
+              const Icon = item.icon;
+              const active = pathname === item.href;
 
-        <p className="mb-4 text-sm text-sidebar-foreground/60">
-          Company Administrator
-        </p>
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  onClick={() => setSidebarOpen(false)}
+                  className={`flex items-center gap-3 rounded-lg px-4 py-3 transition
+                    ${
+                      active
+                        ? "bg-sidebar-primary text-sidebar-primary-foreground"
+                        : "text-sidebar-foreground/75 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                    }`}
+                >
+                  <Icon size={20} />
+                  {item.name}
+                </Link>
+              );
+            })}
 
-        <button className="flex w-full items-center justify-center gap-2 rounded-lg bg-destructive py-2 text-destructive-foreground transition hover:bg-destructive/90">
-          <LogOut size={18} />
-          Logout
-        </button>
+          </nav>
 
-      </div>
+        </div>
 
-    </aside>
+        <div className="mt-auto border-t border-sidebar-border p-6">
+
+          <p className="font-semibold">
+            Barbara Logah
+          </p>
+
+          <p className="mb-4 text-sm text-sidebar-foreground/60">
+            Company Administrator
+          </p>
+
+          <button className="flex w-full items-center justify-center gap-2 rounded-lg bg-destructive py-2 text-destructive-foreground hover:bg-destructive/90">
+            <LogOut size={18} />
+            Logout
+          </button>
+
+        </div>
+
+      </aside>
+    </>
   );
 }

@@ -195,21 +195,58 @@ export default function DashboardPage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-8">
-        <div>
-          <p className="text-muted-foreground">Welcome to the dashboard.</p>
+      <div className="space-y-6 md:space-y-8">
+        <div className="rounded-3xl bg-gradient-to-r from-blue-700 via-cyan-600 to-teal-500 p-6 md:p-10 text-white shadow-lg">
+
+          <p className="text-sm md:text-base text-white/80">Welcome back,</p>
+         
+          <h1 className="mt-2 text-3xl md:text-5xl font-bold">
+            Barbara 👋
+          </h1>
+
+          <p className="mt-4 text-base md:text-lg text-white/90">
+           Monitor visitor check-ins, approvals, visitor history and company activity from one dashboard.
+          </p>
         </div>
 
-        <StatCard
-          title={hasActiveFilters ? "Matching Visitors" : "Total Visitors"}
-          value={hasActiveFilters ? filteredVisitors.length : visitors.length}
-        />
+        <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
 
-        <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+  <StatCard
+    title="Total Visitors"
+    value={visitors.length}
+  />
+
+  <StatCard
+    title="Filtered Visitors"
+    value={filteredVisitors.length}
+  />
+
+  <StatCard
+    title="Pending"
+    value={
+      visitors.filter(
+        (visitor) => visitor.status === "Pending"
+      ).length
+    }
+  />
+
+  <StatCard
+    title="Checked Out"
+    value={
+      visitors.filter(
+        (visitor) => visitor.status === "Checked Out"
+      ).length
+    }
+  />
+
+</div>
+
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+
           <div className="rounded-xl border border-border bg-card p-6 shadow xl:col-span-2">
             <h3 className="mb-4 text-lg font-semibold">Visitor Check-ins</h3>
 
-            <div className="h-[520px]">
+            <div className="h-[280px] md:h-[420px] lg:h-[520px]">
               <VisitorChart />
             </div>
           </div>
@@ -217,7 +254,9 @@ export default function DashboardPage() {
           <div className="rounded-xl border border-border bg-card p-6 shadow">
             <h3 className="mb-4 text-lg font-semibold">Quick Actions</h3>
 
-            <div className="space-y-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 gap-3">
+
+
               <Link
                 href="/dashboard/visitor/register"
                 className="block w-full rounded-lg bg-primary py-3 text-center text-primary-foreground"
@@ -249,7 +288,9 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <section className="rounded-xl flex border border-border bg-card p-6 shadow">
+        <section className="rounded-xl border border-border bg-card p-6 shadow">
+
+
           <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <h3 className="text-lg font-semibold">Filter Visitors</h3>
@@ -270,7 +311,9 @@ export default function DashboardPage() {
           </div>
 
           <div className="grid gap-4 md:grid-cols-3">
+
             <label className="block">
+
               <span className="mb-2 block text-sm font-semibold text-foreground">
                 Search visitor
               </span>
@@ -318,7 +361,7 @@ export default function DashboardPage() {
         <section className="rounded-xl border border-border bg-card p-6 shadow">
           <h3 className="mb-4 text-lg font-semibold">Recent Visitors</h3>
 
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto rounded-lg">
             <table className="w-full min-w-[980px]">
               <thead>
                 <tr className="border-b text-left">
