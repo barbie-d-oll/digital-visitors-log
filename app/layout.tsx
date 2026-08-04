@@ -24,9 +24,9 @@ export const metadata: Metadata = {
     title: "Visitor Log",
   },
   icons: {
-    icon: "/icon.svg",
-    shortcut: "/icon.svg",
-    apple: "/apple-icon.tsx",
+    icon: "/icon",
+    shortcut: "/icon",
+    apple: "/apple-icon",
   },
 };
 

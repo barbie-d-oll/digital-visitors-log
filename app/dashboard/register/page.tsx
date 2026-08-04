@@ -27,10 +27,6 @@ export default function RegisterVisitorPage() {
   // Staff list from Firestore
   const [staffList, setStaffList] = useState<StaffMember[]>([]);
 
-  useEffect(() => {
-    loadStaffList();
-  }, []);
-
   async function loadStaffList() {
     try {
       const snapshot = await getDocs(collection(db, "staff"));
@@ -45,6 +41,12 @@ export default function RegisterVisitorPage() {
       console.error(error);
     }
   }
+
+  useEffect(() => {
+    // Firestore data is loaded client-side after mount on this dashboard page.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void loadStaffList();
+  }, []);
 
   async function registerVisitor() {
     try {
