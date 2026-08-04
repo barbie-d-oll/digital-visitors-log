@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Digital Visitor Log</string>
+    <string name="title_activity_main">Digital Visitor Log</string>
+    <string name="package_name">com.hapaWeb.digitalvisitorlog</string>
+    <string name="custom_url_scheme">com.hapaWeb.digitalvisitorlog</string>
+</resources>
