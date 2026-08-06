@@ -72,15 +72,16 @@ const HomeLayoutPage = () => {
       router.replace(
         normalizedRole === "super_admin" ? "/super-admin" : "/dashboard"
       );
-    } catch (error: unknown) {
-      const code =
-        typeof error === "object" && error !== null && "code" in error
-          ? String(error.code)
-          : "";
+    catch (error: unknown) {
+  console.error("Firebase Login Error:", error);
 
-      setErrorMessage(
-        errorMessages[code] ?? "We couldn't sign you in. Please try again.",
-      );
+  const code =
+    typeof error === "object" && error !== null && "code" in error
+      ? String(error.code)
+      : "";
+
+  setErrorMessage(code || "Unknown error");
+}
     } finally {
       setIsLoading(false);
     }
