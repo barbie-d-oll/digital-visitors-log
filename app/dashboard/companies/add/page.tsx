@@ -1,19 +1,32 @@
 "use client";
 
+import type { FormEvent } from "react";
 import { useState } from "react";
-import DashboardLayout from "../../../components/layouts/DashboardLayout";
-import { db } from "@/lib/firebase";
 import { addDoc, collection } from "firebase/firestore";
+import { Building2, Loader2 } from "lucide-react";
+
+import {
+  DashboardPanel,
+  FormField,
+  PageHeader,
+  fieldControlClassName,
+} from "../../../components/dashboard/DashboardPrimitives";
+import { Button } from "@/components/ui/button";
+import { db } from "@/lib/firebase";
 
 export default function AddCompanyPage() {
   const [companyName, setCompanyName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
+  const [saving, setSaving] = useState(false);
 
-  async function saveCompany() {
+  async function saveCompany(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSaving(true);
+
     try {
-     const companyRef = await addDoc(collection(db, "companies"), {
+      const companyRef = await addDoc(collection(db, "companies"), {
         companyName,
         email,
         phone,
@@ -22,7 +35,6 @@ export default function AddCompanyPage() {
         subscription: "trial",
         createdAt: new Date(),
         updatedAt: new Date(),
-
       });
 
       console.log(companyRef.id);
@@ -36,71 +48,90 @@ export default function AddCompanyPage() {
     } catch (error) {
       console.error(error);
       alert("Failed to save company");
-      
+    } finally {
+      setSaving(false);
     }
   }
 
   return (
-    <DashboardLayout>
-      <div className="max-w-3xl">
-        <h1 className="text-3xl font-bold mb-6">Add Company</h1>
+    <div className="space-y-8">
+        <PageHeader
+          title="Add Company"
+          description="Create a company workspace for staff hosts and visitor records."
+        />
 
-        <div className="space-y-6 rounded-xl border border-border bg-card p-8 shadow">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block mb-2 font-medium">Company Name</label>
-              <input
-                type="text"
-                value={companyName}
-                onChange={(e) => setCompanyName(e.target.value)}
-                className="w-full border rounded-lg p-3"
-                placeholder="HWS Company"
-              />
+        <DashboardPanel
+          title="Company Profile"
+          description="Company details are used across visitor registration and reporting."
+          className="max-w-4xl"
+        >
+          <form onSubmit={saveCompany} className="space-y-6">
+            <div className="grid gap-5 md:grid-cols-2">
+              <FormField
+                label="Company Name"
+                htmlFor="company-name"
+                helper="Use the registered business or branch name."
+              >
+                <input
+                  id="company-name"
+                  type="text"
+                  value={companyName}
+                  onChange={(event) => setCompanyName(event.target.value)}
+                  className={fieldControlClassName}
+                  placeholder="HWS Company"
+                  required
+                />
+              </FormField>
+
+              <FormField label="Email" htmlFor="company-email">
+                <input
+                  id="company-email"
+                  type="email"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  className={fieldControlClassName}
+                  placeholder="admin@hws.com"
+                  required
+                />
+              </FormField>
+
+              <FormField label="Phone" htmlFor="company-phone">
+                <input
+                  id="company-phone"
+                  type="tel"
+                  value={phone}
+                  onChange={(event) => setPhone(event.target.value)}
+                  className={fieldControlClassName}
+                  placeholder="+233..."
+                  required
+                />
+              </FormField>
+
+              <FormField label="Address" htmlFor="company-address">
+                <input
+                  id="company-address"
+                  type="text"
+                  value={address}
+                  onChange={(event) => setAddress(event.target.value)}
+                  className={fieldControlClassName}
+                  placeholder="Accra"
+                  required
+                />
+              </FormField>
             </div>
 
-            <div>
-              <label className="block mb-2 font-medium">Email</label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full border rounded-lg p-3"
-                placeholder="admin@hws.com"
-              />
+            <div className="flex flex-col-reverse gap-3 border-t border-border pt-5 sm:flex-row sm:justify-end">
+              <Button type="submit" disabled={saving}>
+                {saving ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <Building2 className="size-4" />
+                )}
+                {saving ? "Saving..." : "Save Company"}
+              </Button>
             </div>
-
-            <div>
-              <label className="block mb-2 font-medium">Phone</label>
-              <input
-                type="text"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className="w-full border rounded-lg p-3"
-                placeholder="+233..."
-              />
-            </div>
-
-            <div>
-              <label className="block mb-2 font-medium">Address</label>
-              <input
-                type="text"
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                className="w-full border rounded-lg p-3"
-                placeholder="Accra"
-              />
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={saveCompany}
-            className="rounded-lg bg-primary px-6 py-3 text-primary-foreground hover:bg-primary/90"
-          >
-            Save Company
-          </button>
-        </div>
-      </div>
-    </DashboardLayout>
+          </form>
+        </DashboardPanel>
+    </div>
   );
 }

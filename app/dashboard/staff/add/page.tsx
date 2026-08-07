@@ -1,9 +1,18 @@
 "use client";
 
+import type { FormEvent } from "react";
 import { useState } from "react";
-import DashboardLayout from "../../../components/layouts/DashboardLayout";
-import { db } from "@/lib/firebase";
 import { addDoc, collection } from "firebase/firestore";
+import { Loader2, UserPlus } from "lucide-react";
+
+import {
+  DashboardPanel,
+  FormField,
+  PageHeader,
+  fieldControlClassName,
+} from "../../../components/dashboard/DashboardPrimitives";
+import { Button } from "@/components/ui/button";
+import { db } from "@/lib/firebase";
 
 export default function AddStaffPage() {
   const [firstName, setFirstName] = useState("");
@@ -12,8 +21,12 @@ export default function AddStaffPage() {
   const [phone, setPhone] = useState("");
   const [department, setDepartment] = useState("");
   const [position, setPosition] = useState("");
+  const [saving, setSaving] = useState(false);
 
-  async function saveStaff() {
+  async function saveStaff(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSaving(true);
+
     try {
       await addDoc(collection(db, "staff"), {
         firstName,
@@ -23,8 +36,7 @@ export default function AddStaffPage() {
         phone,
         department,
         position,
-
-        companyId: "your-company-id", // Replace with actual company ID
+        companyId: "your-company-id",
         status: "active",
         notificationPreferences: {
           email: true,
@@ -45,83 +57,100 @@ export default function AddStaffPage() {
     } catch (error) {
       console.error(error);
       alert("Failed to save staff");
+    } finally {
+      setSaving(false);
     }
   }
 
   return (
-    <DashboardLayout>
-      <div className="max-w-4xl">
-        <h1 className="text-3xl font-bold mb-6">Add Staff</h1>
+    <div className="space-y-8">
+        <PageHeader
+          title="Add Staff"
+          description="Create a host profile so visitors can be routed to the right team member."
+        />
 
-        <div className="rounded-xl border border-border bg-card p-8 shadow">
-          <div className="grid grid-cols-2 gap-6">
+        <DashboardPanel
+          title="Staff Profile"
+          description="Contact details support visitor notifications and host lookup."
+          className="max-w-4xl"
+        >
+          <form onSubmit={saveStaff} className="space-y-6">
+            <div className="grid gap-5 md:grid-cols-2">
+              <FormField label="First Name" htmlFor="first-name">
+                <input
+                  id="first-name"
+                  className={fieldControlClassName}
+                  value={firstName}
+                  onChange={(event) => setFirstName(event.target.value)}
+                  required
+                />
+              </FormField>
 
-            <div>
-              <label className="block mb-2">First Name</label>
-              <input
-                className="w-full border rounded-lg p-3"
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-              />
+              <FormField label="Last Name" htmlFor="last-name">
+                <input
+                  id="last-name"
+                  className={fieldControlClassName}
+                  value={lastName}
+                  onChange={(event) => setLastName(event.target.value)}
+                  required
+                />
+              </FormField>
+
+              <FormField label="Email" htmlFor="staff-email">
+                <input
+                  id="staff-email"
+                  type="email"
+                  className={fieldControlClassName}
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  required
+                />
+              </FormField>
+
+              <FormField label="Phone" htmlFor="staff-phone">
+                <input
+                  id="staff-phone"
+                  type="tel"
+                  className={fieldControlClassName}
+                  value={phone}
+                  onChange={(event) => setPhone(event.target.value)}
+                  required
+                />
+              </FormField>
+
+              <FormField label="Department" htmlFor="staff-department">
+                <input
+                  id="staff-department"
+                  className={fieldControlClassName}
+                  value={department}
+                  onChange={(event) => setDepartment(event.target.value)}
+                  required
+                />
+              </FormField>
+
+              <FormField label="Position" htmlFor="staff-position">
+                <input
+                  id="staff-position"
+                  className={fieldControlClassName}
+                  value={position}
+                  onChange={(event) => setPosition(event.target.value)}
+                  required
+                />
+              </FormField>
             </div>
 
-            <div>
-              <label className="block mb-2">Last Name</label>
-              <input
-                className="w-full border rounded-lg p-3"
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-              />
+            <div className="flex flex-col-reverse gap-3 border-t border-border pt-5 sm:flex-row sm:justify-end">
+              <Button type="submit" disabled={saving}>
+                {saving ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <UserPlus className="size-4" />
+                )}
+                {saving ? "Saving..." : "Save Staff"}
+              </Button>
             </div>
-
-            <div>
-              <label className="block mb-2">Email</label>
-              <input
-                type="email"
-                className="w-full border rounded-lg p-3"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-
-            <div>
-              <label className="block mb-2">Phone</label>
-              <input
-                className="w-full border rounded-lg p-3"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-              />
-            </div>
-
-            <div>
-              <label className="block mb-2">Department</label>
-              <input
-                className="w-full border rounded-lg p-3"
-                value={department}
-                onChange={(e) => setDepartment(e.target.value)}
-              />
-            </div>
-
-            <div>
-              <label className="block mb-2">Position</label>
-              <input
-                className="w-full border rounded-lg p-3"
-                value={position}
-                onChange={(e) => setPosition(e.target.value)}
-              />
-            </div>
-
-          </div>
-
-          <button
-            type="button"
-            onClick={saveStaff}
-            className="mt-8 rounded-lg bg-primary px-6 py-3 text-primary-foreground hover:bg-primary/90"
-          >
-            Save Staff
-          </button>
-        </div>
-      </div>
-    </DashboardLayout>
+          </form>
+        </DashboardPanel>
+    </div>
   );
 }

@@ -2,118 +2,92 @@
 
 import { useEffect, useState } from "react";
 import { Maximize, Minimize } from "lucide-react";
+
 import { Button } from "../ui/button";
+
+type FullscreenDocument = Document & {
+  mozCancelFullScreen?: () => Promise<void>;
+  mozFullScreenElement?: Element | null;
+  msExitFullscreen?: () => Promise<void>;
+  msFullscreenElement?: Element | null;
+  webkitExitFullscreen?: () => Promise<void>;
+  webkitFullscreenElement?: Element | null;
+};
+
+type FullscreenElement = HTMLElement & {
+  mozRequestFullScreen?: () => Promise<void>;
+  msRequestFullscreen?: () => Promise<void>;
+  webkitRequestFullscreen?: () => Promise<void>;
+};
+
+const getFullscreenElement = () => {
+  const fullscreenDocument = document as FullscreenDocument;
+
+  return (
+    fullscreenDocument.fullscreenElement ||
+    fullscreenDocument.webkitFullscreenElement ||
+    fullscreenDocument.mozFullScreenElement ||
+    fullscreenDocument.msFullscreenElement
+  );
+};
 
 export default function FullScreenButton() {
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   useEffect(() => {
     const handleFullscreenChange = () => {
-      const fullscreenElement = document.fullscreenElement;
+      const fullscreenElement = getFullscreenElement();
       setIsFullscreen(!!fullscreenElement);
-
-      // Ensure scrolling is enabled during fullscreen
-      if (fullscreenElement) {
-        document.body.style.overflow = "auto"; // Allow scrolling
-      } else {
-        document.body.style.overflow = ""; // Reset to default
-      }
+      document.body.style.overflow = fullscreenElement ? "auto" : "";
     };
 
     document.addEventListener("fullscreenchange", handleFullscreenChange);
+    document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
 
     return () => {
       document.removeEventListener("fullscreenchange", handleFullscreenChange);
+      document.removeEventListener(
+        "webkitfullscreenchange",
+        handleFullscreenChange,
+      );
     };
   }, []);
 
   const enterFullScreen = () => {
-    const body = document.body;
+    const body = document.body as FullscreenElement;
+    const request =
+      body.requestFullscreen ||
+      body.webkitRequestFullscreen ||
+      body.mozRequestFullScreen ||
+      body.msRequestFullscreen;
 
-    if (body.requestFullscreen) {
-      body.requestFullscreen();
-    } else if (
-      (body as HTMLElement & { mozRequestFullScreen?: () => Promise<void> })
-        .mozRequestFullScreen
-    ) {
-      if (
-        (body as HTMLElement & { mozRequestFullScreen?: () => Promise<void> })
-          .mozRequestFullScreen
-      ) {
-        if (
-          (body as HTMLElement & { mozRequestFullScreen?: () => Promise<void> })
-            .mozRequestFullScreen
-        ) {
-          (
-            body as HTMLElement & { mozRequestFullScreen?: () => Promise<void> }
-          ).mozRequestFullScreen?.(); // Firefox
-        }
-      }
-    } else if (
-      (body as HTMLElement & { webkitRequestFullscreen?: () => Promise<void> })
-        .webkitRequestFullscreen
-    ) {
-      if (
-        (
-          body as HTMLElement & {
-            webkitRequestFullscreen?: () => Promise<void>;
-          }
-        ).webkitRequestFullscreen
-      ) {
-        (
-          body as HTMLElement & {
-            webkitRequestFullscreen?: () => Promise<void>;
-          }
-        ).webkitRequestFullscreen?.(); // Chrome, Safari, Opera
-      }
-    } else if (
-      (body as HTMLElement & { msRequestFullscreen?: () => Promise<void> })
-        .msRequestFullscreen
-    ) {
-      (
-        body as HTMLElement & { msRequestFullscreen?: () => Promise<void> }
-      ).msRequestFullscreen?.(); // IE/Edge
-    }
+    void request?.call(body);
   };
 
   const exitFullScreen = () => {
-    if (document.exitFullscreen) {
-      document.exitFullscreen();
-    } else if (
-      (document as Document & { mozCancelFullScreen?: () => Promise<void> })
-        .mozCancelFullScreen
-    ) {
-      (
-        document as Document & { mozCancelFullScreen?: () => Promise<void> }
-      ).mozCancelFullScreen?.(); // Firefox
-    } else if (
-      (document as Document & { webkitExitFullscreen?: () => Promise<void> })
-        .webkitExitFullscreen
-    ) {
-      (
-        document as Document & { webkitExitFullscreen?: () => Promise<void> }
-      ).webkitExitFullscreen?.(); // Chrome, Safari, Opera
-    } else if (
-      (document as Document & { msExitFullscreen?: () => Promise<void> })
-        .msExitFullscreen
-    ) {
-      (
-        document as Document & { msExitFullscreen?: () => Promise<void> }
-      ).msExitFullscreen?.(); // IE/Edge
-    }
+    const fullscreenDocument = document as FullscreenDocument;
+    const exit =
+      fullscreenDocument.exitFullscreen ||
+      fullscreenDocument.webkitExitFullscreen ||
+      fullscreenDocument.mozCancelFullScreen ||
+      fullscreenDocument.msExitFullscreen;
+
+    void exit?.call(fullscreenDocument);
   };
 
   return (
-    <div>
+    <Button
+      type="button"
+      onClick={isFullscreen ? exitFullScreen : enterFullScreen}
+      size="icon"
+      variant="outline"
+      aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+    >
       {isFullscreen ? (
-        <Button onClick={exitFullScreen} size="icon" variant="outline">
-          <Minimize className="h-4 w-4" />
-        </Button>
+        <Minimize className="size-4" />
       ) : (
-        <Button onClick={enterFullScreen} size="icon" variant="outline">
-          <Maximize className="h-4 w-4" />
-        </Button>
+        <Maximize className="size-4" />
       )}
-    </div>
+    </Button>
   );
 }

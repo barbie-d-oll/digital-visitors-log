@@ -1,34 +1,46 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import DashboardLayout from "../../components/layouts/DashboardLayout";
-import { db } from "@/lib/firebase";
+import type { FormEvent } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { addDoc, collection, getDocs } from "firebase/firestore";
+import { Loader2, UserPlus } from "lucide-react";
+
+import {
+  DashboardPanel,
+  FormField,
+  PageHeader,
+  SelectField,
+  fieldControlClassName,
+} from "../../components/dashboard/DashboardPrimitives";
+import { Button } from "@/components/ui/button";
+import { db } from "@/lib/firebase";
 
 interface StaffMember {
   id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  department: string;
-  position: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+  department?: string;
+  position?: string;
 }
+
+const getStaffName = (member: StaffMember) =>
+  [member.firstName, member.lastName].filter(Boolean).join(" ") || "Unnamed staff";
 
 export default function RegisterVisitorPage() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [company, setCompany] = useState("");
   const [purpose, setPurpose] = useState("");
-
-  // Selected staff ID
   const [staff, setStaff] = useState("");
-
-  // Staff list from Firestore
   const [staffList, setStaffList] = useState<StaffMember[]>([]);
+  const [loadingStaff, setLoadingStaff] = useState(true);
+  const [saving, setSaving] = useState(false);
 
-  async function loadStaffList() {
+  const loadStaffList = useCallback(async () => {
     try {
+      setLoadingStaff(true);
       const snapshot = await getDocs(collection(db, "staff"));
 
       const data: StaffMember[] = snapshot.docs.map((doc) => ({
@@ -39,20 +51,25 @@ export default function RegisterVisitorPage() {
       setStaffList(data);
     } catch (error) {
       console.error(error);
+    } finally {
+      setLoadingStaff(false);
     }
-  }
-
-  useEffect(() => {
-    // Firestore data is loaded client-side after mount on this dashboard page.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    void loadStaffList();
   }, []);
 
-  async function registerVisitor() {
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      void loadStaffList();
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [loadStaffList]);
+
+  async function registerVisitor(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSaving(true);
+
     try {
-      const selectedStaff = staffList.find(
-        (member) => member.id === staff
-      );
+      const selectedStaff = staffList.find((member) => member.id === staff);
 
       if (!selectedStaff) {
         alert("Please select a staff member.");
@@ -64,15 +81,12 @@ export default function RegisterVisitorPage() {
         phone,
         company,
         purpose,
-
         staffId: selectedStaff.id,
-        staffName: `${selectedStaff.firstName} ${selectedStaff.lastName}`,
+        staffName: getStaffName(selectedStaff),
         staffEmail: selectedStaff.email,
         staffPhone: selectedStaff.phone,
         department: selectedStaff.department,
-
         status: "Pending",
-
         checkIn: new Date(),
       });
 
@@ -86,89 +100,101 @@ export default function RegisterVisitorPage() {
     } catch (error) {
       console.error(error);
       alert("Failed to register visitor");
+    } finally {
+      setSaving(false);
     }
   }
 
   return (
-    <DashboardLayout>
-      <div className="max-w-4xl">
-        <h1 className="text-3xl font-bold mb-6">
-          Register Visitor
-        </h1>
+    <div className="space-y-8">
+        <PageHeader
+          title="Register Visitor"
+          description="Capture visitor and host details for routed approval."
+        />
 
-        <div className="rounded-xl border border-border bg-card p-8 shadow">
+        <DashboardPanel
+          title="Visitor Intake"
+          description="Staff details are attached to the visitor record when a host is selected."
+          className="max-w-4xl"
+        >
+          <form onSubmit={registerVisitor} className="space-y-6">
+            <div className="grid gap-5 md:grid-cols-2">
+              <FormField label="Full Name" htmlFor="visitor-name">
+                <input
+                  id="visitor-name"
+                  className={fieldControlClassName}
+                  value={name}
+                  onChange={(event) => setName(event.target.value)}
+                  required
+                />
+              </FormField>
 
-          <div className="grid grid-cols-2 gap-6">
+              <FormField label="Phone" htmlFor="visitor-phone">
+                <input
+                  id="visitor-phone"
+                  type="tel"
+                  className={fieldControlClassName}
+                  value={phone}
+                  onChange={(event) => setPhone(event.target.value)}
+                  required
+                />
+              </FormField>
 
-            <div>
-              <label className="block mb-2">Full Name</label>
-              <input
-                className="w-full border rounded-lg p-3"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
-            </div>
+              <FormField label="Company" htmlFor="visitor-company">
+                <input
+                  id="visitor-company"
+                  className={fieldControlClassName}
+                  value={company}
+                  onChange={(event) => setCompany(event.target.value)}
+                  required
+                />
+              </FormField>
 
-            <div>
-              <label className="block mb-2">Phone</label>
-              <input
-                className="w-full border rounded-lg p-3"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-              />
-            </div>
+              <FormField label="Purpose" htmlFor="visitor-purpose">
+                <input
+                  id="visitor-purpose"
+                  className={fieldControlClassName}
+                  value={purpose}
+                  onChange={(event) => setPurpose(event.target.value)}
+                  required
+                />
+              </FormField>
 
-            <div>
-              <label className="block mb-2">Company</label>
-              <input
-                className="w-full border rounded-lg p-3"
-                value={company}
-                onChange={(e) => setCompany(e.target.value)}
-              />
-            </div>
-
-            <div>
-              <label className="block mb-2">Purpose</label>
-              <input
-                className="w-full border rounded-lg p-3"
-                value={purpose}
-                onChange={(e) => setPurpose(e.target.value)}
-              />
-            </div>
-
-            <div className="col-span-2">
-              <label className="block mb-2">
-                Staff to Visit
-              </label>
-
-              <select
-                className="w-full border rounded-lg p-3"
-                value={staff}
-                onChange={(e) => setStaff(e.target.value)}
+              <FormField
+                label="Staff to Visit"
+                htmlFor="visitor-staff"
+                helper={loadingStaff ? "Loading staff directory..." : undefined}
+                className="md:col-span-2"
               >
-                <option value="">
-                  Select Staff Member
-                </option>
-
-                {staffList.map((member) => (
-                  <option key={member.id} value={member.id}>
-                    {member.firstName} {member.lastName} —{" "}
-                    {member.department}
-                  </option>
-                ))}
-              </select>
+                <SelectField
+                  id="visitor-staff"
+                  value={staff}
+                  onChange={(event) => setStaff(event.target.value)}
+                  disabled={loadingStaff}
+                  required
+                >
+                  <option value="">Select Staff Member</option>
+                  {staffList.map((member) => (
+                    <option key={member.id} value={member.id}>
+                      {getStaffName(member)} - {member.department || "No department"}
+                    </option>
+                  ))}
+                </SelectField>
+              </FormField>
             </div>
 
-          </div>
-
-          <button
-            onClick={registerVisitor}
-            className="mt-8 rounded-lg bg-primary px-6 py-3 text-primary-foreground"
-          >
-            Register Visitor
-          </button>
-        </div>
-      </div>
-    </DashboardLayout>
+            <div className="flex flex-col-reverse gap-3 border-t border-border pt-5 sm:flex-row sm:justify-end">
+              <Button type="submit" disabled={saving || loadingStaff}>
+                {saving ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <UserPlus className="size-4" />
+                )}
+                {saving ? "Registering..." : "Register Visitor"}
+              </Button>
+            </div>
+          </form>
+        </DashboardPanel>
+    </div>
   );
 }

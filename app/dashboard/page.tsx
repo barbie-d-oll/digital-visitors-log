@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { collection, getDocs } from "firebase/firestore";
 
-import DashboardLayout from "../components/layouts/DashboardLayout";
+ 
 import StatCard from "../components/dashboard/StatCard";
 import VisitorChart from "../components/dashboard/VisitorChart";
 import { db } from "@/lib/firebase";
@@ -73,7 +73,9 @@ const getStringValue = (value: unknown) => {
   return String(value);
 };
 
-const getVisitorDisplayValue = (...values: Array<string | null | undefined>) => {
+const getVisitorDisplayValue = (
+  ...values: Array<string | null | undefined>
+) => {
   const value = values.find((item) => item?.trim());
 
   return value ?? "-";
@@ -194,228 +196,197 @@ export default function DashboardPage() {
   };
 
   return (
-    <DashboardLayout>
-      <div className="space-y-6 md:space-y-8">
-        <div className="rounded-3xl bg-gradient-to-r from-blue-700 via-cyan-600 to-teal-500 p-6 md:p-10 text-white shadow-lg">
+    <div className="space-y-6 md:space-y-8">
+      <div className="">
+        <p className="text-sm md:text-base text-white/80">Welcome back,</p>
 
-          <p className="text-sm md:text-base text-white/80">Welcome back,</p>
-         
-          <h1 className="mt-2 text-3xl md:text-5xl font-bold">
-            Barbara 👋
-          </h1>
+        <h1 className="mt-2 text-3xl md:text-5xl font-bold">Barbara 👋</h1>
 
-          <p className="mt-4 text-base md:text-lg text-white/90">
-           Monitor visitor check-ins, approvals, visitor history and company activity from one dashboard.
-          </p>
-        </div>
-
-        <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
-
-  <StatCard
-    title="Total Visitors"
-    value={visitors.length}
-  />
-
-  <StatCard
-    title="Filtered Visitors"
-    value={filteredVisitors.length}
-  />
-
-  <StatCard
-    title="Pending"
-    value={
-      visitors.filter(
-        (visitor) => visitor.status === "Pending"
-      ).length
-    }
-  />
-
-  <StatCard
-    title="Checked Out"
-    value={
-      visitors.filter(
-        (visitor) => visitor.status === "Checked Out"
-      ).length
-    }
-  />
-
-</div>
-
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-
-          <div className="rounded-xl border border-border bg-card p-6 shadow xl:col-span-2">
-            <h3 className="mb-4 text-lg font-semibold">Visitor Check-ins</h3>
-
-            <div className="h-[280px] md:h-[420px] lg:h-[520px]">
-              <VisitorChart />
-            </div>
+        <p className="mt-4 text-base md:text-lg text-white/90">
+          Monitor visitor check-ins, approvals, visitor history and company
+          activity from one dashboard.
+        </p>
+      </div>
+      <section className="rounded-xl border border-border bg-card p-6 shadow-enterprise-sm">
+        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div className="min-w-0">
+            <p className="text-sm font-medium text-brand">
+              Digital Visitor Log
+            </p>
+            <h1 className="mt-2 text-2xl font-bold tracking-normal text-foreground md:text-3xl">
+              Dashboard Overview
+            </h1>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground md:text-base">
+              Monitor visitor check-ins, approvals, visitor history, and company
+              activity from one dashboard.
+            </p>
           </div>
 
-          <div className="rounded-xl border border-border bg-card p-6 shadow">
-            <h3 className="mb-4 text-lg font-semibold">Quick Actions</h3>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 gap-3">
-
-
-              <Link
-                href="/dashboard/visitor/register"
-                className="block w-full rounded-lg bg-primary py-3 text-center text-primary-foreground"
-              >
-                Register Visitor
-              </Link>
-
-              <Link
-                href="/dashboard/staff/add"
-                className="block w-full rounded-lg bg-secondary py-3 text-center text-secondary-foreground"
-              >
-                Add Staff
-              </Link>
-
-              <Link
-                href="/dashboard/visitor"
-                className="block w-full rounded-lg bg-accent py-3 text-center text-accent-foreground"
-              >
-                Visitor History
-              </Link>
-
-              <Link
-                href="/dashboard/companies"
-                className="block w-full rounded-lg bg-brand py-3 text-center text-brand-foreground"
-              >
-                Companies
-              </Link>
-            </div>
-          </div>
-        </div>
-
-        <section className="rounded-xl border border-border bg-card p-6 shadow">
-
-
-          <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <h3 className="text-lg font-semibold">Filter Visitors</h3>
-              <p className="text-sm text-muted-foreground">
-                Showing {filteredVisitors.length} of {visitors.length} visitor
-                records.
-              </p>
-            </div>
-
-            <button
-              type="button"
-              onClick={clearFilters}
-              disabled={!hasActiveFilters}
-              className="w-fit rounded-lg border border-border px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-accent hover:text-accent-foreground disabled:cursor-not-allowed disabled:opacity-50"
+          <div className="flex flex-wrap gap-3">
+            <Link
+              href="/dashboard/report"
+              className="rounded-lg border border-border px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-accent hover:text-accent-foreground"
             >
-              Clear filters
-            </button>
+              View Reports
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
+        <StatCard title="Total Visitors" value={visitors.length} />
+
+        {/* <StatCard title="Filtered Visitors" value={filteredVisitors.length} /> */}
+
+        <StatCard
+          title="Pending"
+          value={
+            visitors.filter((visitor) => visitor.status === "Pending").length
+          }
+        />
+
+        <StatCard
+          title="Checked Out"
+          value={
+            visitors.filter((visitor) => visitor.status === "Checked Out")
+              .length
+          }
+        />
+      </div>
+
+      <div className="grid grid-cols-1   gap-6">
+        <div className="rounded-xl border border-border bg-card p-6 shadow xl:col-span-2">
+          <h3 className="mb-4 text-lg font-semibold">Visitor Check-ins</h3>
+
+          <div className=" ">
+            <VisitorChart visitors={visitors} />
+          </div>
+        </div>
+
+      </div>
+      <section className="rounded-xl border border-border bg-card p-6 shadow">
+        <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h3 className="text-lg font-semibold">Filter Visitors</h3>
+            <p className="text-sm text-muted-foreground">
+              Showing {filteredVisitors.length} of {visitors.length} visitor
+              records.
+            </p>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-3">
+          <button
+            type="button"
+            onClick={clearFilters}
+            disabled={!hasActiveFilters}
+            className="w-fit rounded-lg border border-border px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-accent hover:text-accent-foreground disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Clear filters
+          </button>
+        </div>
 
-            <label className="block">
+        <div className="grid gap-4 md:grid-cols-3">
+          <label className="block">
+            <span className="mb-2 block text-sm font-semibold text-foreground">
+              Search visitor
+            </span>
+            <input
+              type="search"
+              value={filters.search}
+              onChange={(event) => updateFilter("search", event.target.value)}
+              placeholder="Name, company, phone, code..."
+              className="min-h-11 w-full rounded-lg border border-input bg-background px-4 text-sm text-foreground outline-none transition placeholder:text-muted-foreground focus:border-ring focus:ring-4 focus:ring-ring/20"
+            />
+          </label>
 
-              <span className="mb-2 block text-sm font-semibold text-foreground">
-                Search visitor
-              </span>
-              <input
-                type="search"
-                value={filters.search}
-                onChange={(event) => updateFilter("search", event.target.value)}
-                placeholder="Name, company, phone, code..."
-                className="min-h-11 w-full rounded-lg border border-input bg-background px-4 text-sm text-foreground outline-none transition placeholder:text-muted-foreground focus:border-ring focus:ring-4 focus:ring-ring/20"
-              />
-            </label>
+          <label className="block">
+            <span className="mb-2 block text-sm font-semibold text-foreground">
+              Filter by date
+            </span>
+            <input
+              type="date"
+              value={filters.date}
+              onChange={(event) => updateFilter("date", event.target.value)}
+              className="min-h-11 w-full rounded-lg border border-input bg-background px-4 text-sm text-foreground outline-none transition focus:border-ring focus:ring-4 focus:ring-ring/20"
+            />
+          </label>
 
-            <label className="block">
-              <span className="mb-2 block text-sm font-semibold text-foreground">
-                Filter by date
-              </span>
-              <input
-                type="date"
-                value={filters.date}
-                onChange={(event) => updateFilter("date", event.target.value)}
-                className="min-h-11 w-full rounded-lg border border-input bg-background px-4 text-sm text-foreground outline-none transition focus:border-ring focus:ring-4 focus:ring-ring/20"
-              />
-            </label>
+          <label className="block">
+            <span className="mb-2 block text-sm font-semibold text-foreground">
+              Filter by day
+            </span>
+            <select
+              value={filters.day}
+              onChange={(event) => updateFilter("day", event.target.value)}
+              className="min-h-11 w-full rounded-lg border border-input bg-background px-4 text-sm text-foreground outline-none transition focus:border-ring focus:ring-4 focus:ring-ring/20"
+            >
+              <option value="">All days</option>
+              {weekDays.map((day) => (
+                <option key={day.value} value={day.value}>
+                  {day.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+      </section>
 
-            <label className="block">
-              <span className="mb-2 block text-sm font-semibold text-foreground">
-                Filter by day
-              </span>
-              <select
-                value={filters.day}
-                onChange={(event) => updateFilter("day", event.target.value)}
-                className="min-h-11 w-full rounded-lg border border-input bg-background px-4 text-sm text-foreground outline-none transition focus:border-ring focus:ring-4 focus:ring-ring/20"
-              >
-                <option value="">All days</option>
-                {weekDays.map((day) => (
-                  <option key={day.value} value={day.value}>
-                    {day.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
-        </section>
+      <section className="rounded-xl border border-border bg-card p-6 shadow">
+        <h3 className="mb-4 text-lg font-semibold">Recent Visitors</h3>
 
-        <section className="rounded-xl border border-border bg-card p-6 shadow">
-          <h3 className="mb-4 text-lg font-semibold">Recent Visitors</h3>
+        <div className="overflow-x-auto rounded-lg">
+          <table className="w-full min-w-[980px]">
+            <thead>
+              <tr className="border-b text-left">
+                <th className="py-3">Name</th>
+                <th>Company</th>
+                <th>Staff</th>
+                <th>Visitor Number</th>
+                <th>Generated Code</th>
+                <th>Time In</th>
+                <th>Time Out</th>
+                <th>Status</th>
+              </tr>
+            </thead>
 
-          <div className="overflow-x-auto rounded-lg">
-            <table className="w-full min-w-[980px]">
-              <thead>
-                <tr className="border-b text-left">
-                  <th className="py-3">Name</th>
-                  <th>Company</th>
-                  <th>Staff</th>
-                  <th>Visitor Number</th>
-                  <th>Generated Code</th>
-                  <th>Time In</th>
-                  <th>Time Out</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {filteredVisitors.length > 0 ? (
-                  filteredVisitors.map((visitor) => (
-                    <tr key={visitor.id} className="border-b">
-                      <td className="py-4">
-                        {getVisitorDisplayValue(visitor.name)}
-                      </td>
-                      <td>{getVisitorDisplayValue(visitor.company)}</td>
-                      <td>{getVisitorDisplayValue(visitor.staff)}</td>
-                      <td>
-                        {getVisitorDisplayValue(visitor.phone, visitor.number)}
-                      </td>
-                      <td className="font-mono font-semibold tracking-[0.14em] text-foreground">
-                        {getVisitorDisplayValue(
-                          visitor.visitorCode,
-                          visitor.code,
-                        )}
-                      </td>
-                      <td>{formatVisitorTime(visitor.checkIn)}</td>
-                      <td>{formatVisitorTime(visitor.checkOut)}</td>
-                      <td className="font-semibold text-brand">
-                        {getVisitorDisplayValue(visitor.status)}
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td
-                      colSpan={8}
-                      className="py-10 text-center text-sm text-muted-foreground"
-                    >
-                      No visitors match the current filters.
+            <tbody>
+              {filteredVisitors.length > 0 ? (
+                filteredVisitors.map((visitor) => (
+                  <tr key={visitor.id} className="border-b">
+                    <td className="py-4">
+                      {getVisitorDisplayValue(visitor.name)}
+                    </td>
+                    <td>{getVisitorDisplayValue(visitor.company)}</td>
+                    <td>{getVisitorDisplayValue(visitor.staff)}</td>
+                    <td>
+                      {getVisitorDisplayValue(visitor.phone, visitor.number)}
+                    </td>
+                    <td className="font-mono font-semibold tracking-[0.14em] text-foreground">
+                      {getVisitorDisplayValue(
+                        visitor.visitorCode,
+                        visitor.code,
+                      )}
+                    </td>
+                    <td>{formatVisitorTime(visitor.checkIn)}</td>
+                    <td>{formatVisitorTime(visitor.checkOut)}</td>
+                    <td className="font-semibold text-brand">
+                      {getVisitorDisplayValue(visitor.status)}
                     </td>
                   </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </section>
-      </div>
-    </DashboardLayout>
+                ))
+              ) : (
+                <tr>
+                  <td
+                    colSpan={8}
+                    className="py-10 text-center text-sm text-muted-foreground"
+                  >
+                    No visitors match the current filters.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
   );
 }
