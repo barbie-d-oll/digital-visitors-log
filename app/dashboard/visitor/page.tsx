@@ -187,14 +187,14 @@ export default function VisitorsPage() {
         <PageHeader
           title="Visitors"
           description="Register, search, sort, and review visitor activity from the front desk."
-          actions={
-            <Button asChild>
-              <Link href="/dashboard/visitor/register">
-                <Plus className="size-4" />
-                Register Visitor
-              </Link>
-            </Button>
-          }
+          // actions={
+          //   <Button asChild>
+          //     <Link href="/dashboard/visitor/register">
+          //       <Plus className="size-4" />
+          //       Register Visitor
+          //     </Link>
+          //   </Button>
+          // }
         />
 
         <DashboardPanel
