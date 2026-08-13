@@ -434,11 +434,8 @@ export default function PublicVisitorRegistrationPage() {
                   </label>
 
                   <label className="block">
-                    <span className="mb-2 block text-xs font-bold text-foreground/80">
-                      Company
-                    </span>
-
-                    <span className="flex min-h-13 items-center gap-3 rounded-xl border border-input bg-background px-4 text-muted-foreground">
+                    <span className="mb-2 block text-xs font-bold text-foreground/80">Company </span>
+                    <span className="flex min-h-13 items-center gap-3 rounded-xl border border-input bg-background px-4 text-muted-foreground transition focus-within:border-ring focus-within:ring-4 focus-within:ring-ring/20">
                       <Building2 size={18} />
 
                       <input

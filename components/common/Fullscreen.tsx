@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 import { Maximize, Minimize } from "lucide-react";
 
 import { Button } from "../ui/button";
@@ -31,27 +31,42 @@ const getFullscreenElement = () => {
   );
 };
 
+const subscribeToHydration = () => () => undefined;
+const getClientHydrationSnapshot = () => true;
+const getServerHydrationSnapshot = () => false;
+
+const subscribeToFullscreen = (onStoreChange: () => void) => {
+  document.addEventListener("fullscreenchange", onStoreChange);
+  document.addEventListener("webkitfullscreenchange", onStoreChange);
+
+  return () => {
+    document.removeEventListener("fullscreenchange", onStoreChange);
+    document.removeEventListener("webkitfullscreenchange", onStoreChange);
+  };
+};
+
+const getFullscreenSnapshot = () => !!getFullscreenElement();
+const getServerFullscreenSnapshot = () => false;
+
 export default function FullScreenButton() {
-  const [isFullscreen, setIsFullscreen] = useState(false);
+  const hasMounted = useSyncExternalStore(
+    subscribeToHydration,
+    getClientHydrationSnapshot,
+    getServerHydrationSnapshot,
+  );
+  const isFullscreen = useSyncExternalStore(
+    subscribeToFullscreen,
+    getFullscreenSnapshot,
+    getServerFullscreenSnapshot,
+  );
 
   useEffect(() => {
-    const handleFullscreenChange = () => {
-      const fullscreenElement = getFullscreenElement();
-      setIsFullscreen(!!fullscreenElement);
-      document.body.style.overflow = fullscreenElement ? "auto" : "";
-    };
-
-    document.addEventListener("fullscreenchange", handleFullscreenChange);
-    document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
+    document.body.style.overflow = isFullscreen ? "auto" : "";
 
     return () => {
-      document.removeEventListener("fullscreenchange", handleFullscreenChange);
-      document.removeEventListener(
-        "webkitfullscreenchange",
-        handleFullscreenChange,
-      );
+      document.body.style.overflow = "";
     };
-  }, []);
+  }, [isFullscreen]);
 
   const enterFullScreen = () => {
     const body = document.body as FullscreenElement;
@@ -74,6 +89,10 @@ export default function FullScreenButton() {
 
     void exit?.call(fullscreenDocument);
   };
+
+  if (!hasMounted) {
+    return <div aria-hidden="true" className="size-8 shrink-0" />;
+  }
 
   return (
     <Button

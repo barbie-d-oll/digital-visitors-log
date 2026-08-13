@@ -1,12 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { collection, getDocs } from "firebase/firestore";
 import {
   Eye,
   MoreHorizontal,
-  Plus,
   RefreshCw,
   SlidersHorizontal,
   UserRound,
@@ -84,6 +82,9 @@ const formatVisitorDate = (value: FirestoreDate) => {
 const normalizeStatus = (status?: string) => status?.trim().toLowerCase() ?? "";
 
 const getDisplayValue = (value?: string) => value?.trim() || "-";
+
+const getStatusFilterLabel = (status?: string) =>
+  normalizeStatus(status) === "pending" ? "Onprem" : getDisplayValue(status);
 
 const pageSize = 8;
 
@@ -189,10 +190,10 @@ export default function VisitorsPage() {
           description="Register, search, sort, and review visitor activity from the front desk."
           actions={
             <Button asChild>
-              <Link href="/dashboard/visitor/register">
+              {/* <Link href="/dashboard/visitor/register">
                 <Plus className="size-4" />
                 Register Visitor
-              </Link>
+              </Link> */}
             </Button>
           }
         />
@@ -225,7 +226,7 @@ export default function VisitorsPage() {
                 <option value="">All statuses</option>
                 {statuses.map((status) => (
                   <option key={status} value={normalizeStatus(status)}>
-                    {status}
+                    {getStatusFilterLabel(status)}
                   </option>
                 ))}
               </SelectField>
@@ -261,11 +262,11 @@ export default function VisitorsPage() {
             <LoadingState label="Loading visitors" />
           ) : visibleVisitors.length > 0 ? (
             <>
-              <Table className="min-w-[960px]">
+              <Table className="min-w-240">
                 <TableHeader className="bg-surface-muted">
                   <TableRow>
                     <TableHead className="px-5">Visitor</TableHead>
-                    <TableHead>Company</TableHead>
+                    <TableHead>From</TableHead>
                     <TableHead>Staff</TableHead>
                     <TableHead>Purpose</TableHead>
                     <TableHead>Check In</TableHead>
