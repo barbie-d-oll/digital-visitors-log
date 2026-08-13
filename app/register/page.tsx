@@ -192,7 +192,7 @@ export default function PublicVisitorRegistrationPage() {
         checkIn: serverTimestamp(),
         checkOut: null,
 
-        smsStatus: "Pending",
+        smsStatus: "Unpremised",
 
         createdAt: serverTimestamp(),
       });
