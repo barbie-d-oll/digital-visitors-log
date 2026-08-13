@@ -1,4 +1,4 @@
-import { initializeApp } from "firebase/app";
+import { getApp, getApps, initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
@@ -9,9 +9,12 @@ const firebaseConfig = {
   storageBucket: "digital-visitors-log.firebasestorage.app",
   messagingSenderId: "742804862458",
   appId: "1:742804862458:web:bd357e7e4bfc24706ea043",
+  measurementId: "G-PDMZLGJET3"
 };
 
-const app = initializeApp(firebaseConfig);
+const app = getApps().length
+  ? getApp()
+  : initializeApp(firebaseConfig);
 
 export const auth = getAuth(app);
 export const db = getFirestore(app);
