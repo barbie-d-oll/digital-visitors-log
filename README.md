@@ -1,23 +1,13 @@
 # 🚪 Digital Visitors Log
 
-<p align="center">
-  <img src="./public/logo.png" alt="Digital Visitors Log" width="150"/>
-</p>
+A modern, secure, multi-tenant visitor management SaaS built with **Next.js**, **MongoDB**, and **TypeScript**.
 
-<p align="center">
-A modern, secure, and intelligent visitor management system built with <strong>Next.js</strong> and <strong>Firebase</strong> to streamline visitor registration, tracking, and notifications.
-</p>
-
-<p align="center">
-
-![Next.js](https://img.shields.io/badge/Next.js-15-black?logo=next.js)
+![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js)
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react)
-![Firebase](https://img.shields.io/badge/Firebase-Firestore-FFCA28?logo=firebase)
+![MongoDB](https://img.shields.io/badge/MongoDB-Mongoose-47A248?logo=mongodb)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5+-3178C6?logo=typescript)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3-38B2AC?logo=tailwind-css)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-38B2AC?logo=tailwind-css)
 ![License](https://img.shields.io/badge/License-MIT-green)
-
-</p>
 
 ---
 
@@ -27,540 +17,157 @@ A modern, secure, and intelligent visitor management system built with <strong>N
 
 ---
 
-# 📖 Table of Contents
+## 📌 Overview
 
-- Overview
-- Features
-- Technology Stack
-- System Architecture
-- Screenshots
-- Installation
-- Environment Variables
-- Running the Project
-- Project Structure
-- SMS Integration
-- Deployment
-- Troubleshooting
-- Contributing
-- Future Improvements
-- License
+Digital Visitors Log is a cloud-based multi-tenant visitor management platform designed to replace traditional paper visitor books. Organizations sign up, configure their workspace, and manage visitors through a professional dashboard.
+
+**Ideal for:** Corporate offices, schools, hospitals, government institutions, NGOs, co-working spaces.
 
 ---
 
-# 📌 Overview
+## ✨ Features
 
-Digital Visitors Log is a cloud-based visitor management application designed to replace traditional paper visitor books.
+### Visitor Management
+- QR code check-in (org-specific kiosk page)
+- Pre-registration / appointments with codes
+- Returning visitor detection (auto-fills form)
+- Visitor sign-out with unique code
+- NDA / document signing during check-in
+- Visitor badge data generation
+- Emergency evacuation list (who's on-premises now)
 
-The platform enables organisations to securely register visitors, generate unique visitor codes, notify visitors via SMS, monitor visitor activity in real-time, and maintain an auditable history of all visitor interactions.
+### Notifications
+- Email notifications via Nodemailer (SMTP)
+- SMS notifications via SMS Online GH
+- Slack and Microsoft Teams webhooks
+- Department head notifications
+- Configurable per-organization
 
-The application is built with scalability, security, and ease of use in mind, making it ideal for:
+### Security & Compliance
+- JWT + bcryptjs authentication
+- Google OAuth login
+- Blocklist / watchlist with auto-deny
+- Audit logging (all actions tracked)
+- Role-based access control (owner, admin, staff)
+- NDA signature storage
 
-- Corporate Offices
-- Schools
-- Government Institutions
-- NGOs
-- Co-working Spaces
-- Hospitals
-- Reception Desks
+### Multi-tenant SaaS
+- Organization isolation (all data scoped by org ID)
+- Multi-org membership (users can belong to multiple orgs)
+- Per-org SMS API keys and settings
+- Custom branding (logo, colors)
+- Multi-location support
 
----
-
-# ✨ Features
-
-## Visitor Management
-
-- Visitor Registration
-- Visitor Check-in
-- Visitor Check-out
-- Visitor History
-- Temporary Visitor Code Generation
-- Visitor Status Tracking
-
----
-
-## Dashboard
-
-- Reception Dashboard
-- Visitor Statistics
-- Recent Visitors
-- Daily Reports
-- Search Visitors
-- Filter Records
-
----
-
-## Notifications
-
-- SMS Notification
-- Visitor Code Delivery
-- Ghana Number Formatting
-- SMS Error Logging
+### Dashboard
+- Analytics (peak hours, busiest days, purpose breakdown)
+- Reports with CSV/JSON export
+- Staff & department management
+- Appointment scheduling
+- Settings (notifications, integrations, NDA, branding)
+- Kiosk & QR code management
 
 ---
 
-## Security
-
-- Firebase Authentication
-- Firestore Database
-- Secure API Routes
-- Environment Variable Protection
-- Server-side SMS Integration
-
----
-
-## User Experience
-
-- Responsive Design
-- Mobile Friendly
-- Fast Navigation
-- Clean Modern Interface
-- Accessible Components
-
----
-
-# 🛠 Technology Stack
+## 🛠 Technology Stack
 
 | Technology | Purpose |
-|------------|---------|
-| Next.js App Router | Full-stack Framework |
-| React 19 | User Interface |
-| TypeScript | Type Safety |
-| Firebase Authentication | User Authentication |
-| Firebase Firestore | Database |
-| Axios | HTTP Requests |
-| Tailwind CSS | Styling |
-| shadcn/ui | UI Components |
-| Vercel | Hosting |
-| SMS Online GH | SMS Delivery |
+|---|---|
+| Next.js 16 (App Router) | Full-stack framework |
+| React 19 | UI layer |
+| TypeScript 5 | Type safety |
+| MongoDB + Mongoose | Database |
+| bcryptjs + JWT | Authentication |
+| Google OAuth 2.0 | Social login |
+| Nodemailer | Email delivery |
+| Tailwind CSS 4 | Styling |
+| shadcn/ui | UI components |
+| Recharts | Charts |
+| Vercel | Deployment |
 
 ---
 
-# 🏗 System Architecture
+## 🚀 Getting Started
 
-```
-Visitor
-      │
-      ▼
-Next.js Frontend
-      │
-      ▼
-API Routes
-      │
-      ├────────────► Firebase Firestore
-      │
-      ├────────────► Firebase Authentication
-      │
-      └────────────► SMS Online GH API
-```
-
----
-
-# 📷 Screenshots
-
-
-
-Example:
-
-## Home Page
-
-![home](public/image.png)
-
-## Visitor SigUp
-
-![alt text](public/image-2.png)
-
-## Visitors Registration
-![alt text](public/image-1.png)
-
-
----
-
-# 🚀 Installation
-
-## Prerequisites
-
-Before running the project ensure you have:
-
+### Prerequisites
 - Node.js 18+
-- npm / pnpm / yarn
-- Firebase Project
-- Firestore Enabled
-- Firebase Authentication Enabled
-- SMS Online GH Account
-- API Key
+- MongoDB (Atlas or local)
+- SMTP email account (Gmail app password works)
 
----
-
-## Clone Repository
+### Install
 
 ```bash
 git clone https://github.com/yourusername/digital-visitors-log.git
-
 cd digital-visitors-log
-```
-
----
-
-## Install Dependencies
-
-```bash
 npm install
 ```
 
----
+### Environment Variables
 
-# ⚙ Environment Variables
-
-Create a file named:
-
-```bash
-.env.local
-```
-
-Example:
+Create `.env.local`:
 
 ```env
+# MongoDB
+MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net/digital-visitors-log
+
+# JWT
+JWT_SECRET=your-strong-random-secret
+JWT_EXPIRES_IN=7d
+
+# Google OAuth
+GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=your-client-secret
+
+# Email (SMTP)
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your-email@gmail.com
+SMTP_PASS=your-app-password
+EMAIL_FROM=Visitor Log <your-email@gmail.com>
+
 # SMS
-
 SMS_TOKEN=your_sms_api_key
-
 SMS_SENDER=HWSTECH
 
-# Firebase
-
-FIREBASE_API_KEY=
-
-FIREBASE_AUTH_DOMAIN=
-
-FIREBASE_PROJECT_ID=
-
-FIREBASE_STORAGE_BUCKET=
-
-FIREBASE_MESSAGING_SENDER_ID=
-
-FIREBASE_APP_ID=
+# App
+NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 
-> Never commit `.env.local` to GitHub.
-
----
-
-# ▶ Running the Project
-
-Development
+### Run
 
 ```bash
 npm run dev
 ```
 
-Application runs at
+Open http://localhost:3000, then go to `/auth/register` to create your first organization.
+
+---
+
+## 📂 Project Structure
 
 ```
-http://localhost:3000
-```
+app/
+├── api/              # All API routes (auth, visitors, staff, etc.)
+├── auth/             # Login, register, forgot/reset password
+├── dashboard/        # 17 dashboard pages
+├── kiosk/[slug]/     # Org-specific reception kiosk
+├── register/         # Public visitor check-in
+├── logout/           # Public visitor sign-out
+└── onboarding/       # New org setup wizard
 
-Production Build
+lib/
+├── auth/             # JWT, password, Google OAuth helpers
+├── db/               # Mongoose connection
+├── models/           # All Mongoose schemas
+├── notifications/    # Email, Slack/Teams, host notification
+├── sms/              # SMS Online GH integration
+└── audit.ts          # Audit logging helper
 
-```bash
-npm run build
-
-npm run start
-```
-
-Lint
-
-```bash
-npm run lint
+context/              # AuthContext (React Context + JWT)
+components/           # Shared UI components
 ```
 
 ---
 
-# 📂 Project Structure
+## 📄 License
 
-```
-digital-visitors-log/
-
-│
-
-├── app/
-
-│ ├── api/
-
-│ ├── dashboard/
-
-│ └── ...
-
-│
-
-├── components/
-
-│ ├── home/
-
-│ ├── dashboard/
-
-│ └── ui/
-
-│
-
-├── lib/
-
-│ ├── firebase.ts
-
-│ └── sms/
-
-│
-
-├── public/
-
-├── styles/
-
-├── hooks/
-
-├── types/
-
-└── README.md
-```
-
----
-
-# 📱 SMS Integration
-
-The application currently integrates with **SMS Online GH**.
-
-### SMS Flow
-
-```
-Visitor Registers
-
-↓
-
-Generate Visitor Code
-
-↓
-
-Format Phone Number
-
-↓
-
-API Route
-
-↓
-
-SMS Online GH
-
-↓
-
-Visitor Receives SMS
-```
-
----
-
-## API Location
-
-```
-app/api/sms/visitor-code/route.ts
-```
-
----
-
-## SMS Helper
-
-```
-lib/sms/sms-config.ts
-```
-
----
-
-## Common SMS Errors
-
-### Missing API Key
-
-```
-SMS_TOKEN not found
-```
-
-Solution
-
-- Verify `.env.local`
-- Restart server
-
----
-
-### Invalid Sender
-
-```
-HSHK_ERR_UA_INVALID_SENDER
-```
-
-Solution
-
-Use an approved sender ID from your SMS provider.
-
----
-
-### Insufficient Credit
-
-```
-HSHK_ERR_UA_INSUFF_CREDIT
-```
-
-Solution
-
-Recharge your SMS account.
-
----
-
-### Invalid Phone Number
-
-Ensure numbers are formatted correctly:
-
-```
-0241234567
-
-↓
-
-233241234567
-```
-
----
-
-# ☁ Deployment
-
-The project is deployed on **Vercel**.
-
-Deployment Steps
-
-```bash
-npm run build
-```
-
-Push to GitHub
-
-Connect repository to Vercel
-
-Add Environment Variables
-
-Deploy
-
----
-
-# 🔍 Troubleshooting
-
-### SMS Not Sending
-
-- Check SMS_TOKEN
-- Verify sender ID
-- Check SMS credits
-- Restart server
-- Inspect server logs
-
----
-
-### Firebase Errors
-
-Verify:
-
-- API Key
-- Project ID
-- Authentication
-- Firestore Rules
-
----
-
-### Build Errors
-
-Delete cache
-
-```bash
-rm -rf .next
-```
-
-Reinstall packages
-
-```bash
-npm install
-```
-
-Build again
-
-```bash
-npm run build
-```
-
----
-
-# 📈 Future Improvements
-
-- QR Code Visitor Passes
-- Email Notifications
-- Visitor Photo Capture
-- ID Card Scanning
-- Appointment Scheduling
-- Host Approval Workflow
-- Visitor Badge Printing
-- Analytics Dashboard
-- Multi-Branch Support
-- Offline Support (PWA)
-
----
-
-# 🤝 Contributing
-
-Contributions are welcome!
-
-1. Fork the repository
-
-2. Create a feature branch
-
-```bash
-git checkout -b feature/new-feature
-```
-
-3. Commit your changes
-
-```bash
-git commit -m "Add new feature"
-```
-
-4. Push
-
-```bash
-git push origin feature/new-feature
-```
-
-5. Open a Pull Request
-
----
-
-# 📄 License
-
-This project is licensed under the **MIT License**.
-
----
-
-# 🙏 Acknowledgements
-
-This project was built using:
-
-- Next.js
-- React
-- Firebase
-- Tailwind CSS
-- shadcn/ui
-- Axios
-- SMS Online GH
-- Vercel
-
----
-
-# 💙 Author
-
-**Digital Visitors Log**
-
-Built with ❤️ using Next.js and Firebase.
-
----
-
-<p align="center">
-If you found this project helpful, consider giving it a ⭐ on GitHub!
-</p>
+MIT License.

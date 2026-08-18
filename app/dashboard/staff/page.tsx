@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { collection, getDocs } from "firebase/firestore";
 import { MoreHorizontal, Plus, RefreshCw, Users } from "lucide-react";
 
 import {
@@ -13,7 +12,7 @@ import {
   SearchField,
   StatusBadge,
   Toolbar,
-} from "../../components/dashboard/DashboardPrimitives";
+} from "../../_components/dashboard/DashboardPrimitives";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -30,20 +29,23 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { db } from "@/lib/firebase";
 
 type StaffMember = {
-  id: string;
-  department?: string;
+  _id: string;
+  name: string;
   email?: string;
-  firstName?: string;
-  lastName?: string;
   phone?: string;
   position?: string;
+  status?: string;
+  departmentId?: { _id: string; name: string } | string;
 };
 
-const getStaffName = (member: StaffMember) =>
-  [member.firstName, member.lastName].filter(Boolean).join(" ") || "-";
+const getDepartmentName = (member: StaffMember) => {
+  if (typeof member.departmentId === "object" && member.departmentId) {
+    return member.departmentId.name;
+  }
+  return "-";
+};
 
 export default function StaffPage() {
   const [staff, setStaff] = useState<StaffMember[]>([]);
@@ -53,53 +55,25 @@ export default function StaffPage() {
   const loadStaff = useCallback(async () => {
     try {
       setLoading(true);
-      const snapshot = await getDocs(collection(db, "staff"));
-
-      const data = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as StaffMember[];
-
-      setStaff(data);
+      const res = await fetch(`/api/staff?search=${encodeURIComponent(search)}`);
+      if (res.ok) {
+        const data = await res.json();
+        setStaff(data.staff);
+      }
     } catch (error) {
       console.error(error);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [search]);
 
   useEffect(() => {
-    const timeoutId = window.setTimeout(() => {
-      void loadStaff();
-    }, 0);
-
-    return () => window.clearTimeout(timeoutId);
+    loadStaff();
   }, [loadStaff]);
 
   const filteredStaff = useMemo(() => {
-    const keyword = search.trim().toLowerCase();
-    const sortedStaff = [...staff].sort((firstMember, secondMember) =>
-      getStaffName(firstMember).localeCompare(getStaffName(secondMember)),
-    );
-
-    if (!keyword) {
-      return sortedStaff;
-    }
-
-    return sortedStaff.filter((member) =>
-      [
-        getStaffName(member),
-        member.department,
-        member.position,
-        member.phone,
-        member.email,
-      ]
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase()
-        .includes(keyword),
-    );
-  }, [search, staff]);
+    return [...staff].sort((a, b) => a.name.localeCompare(b.name));
+  }, [staff]);
 
   return (
     <div className="space-y-8">
@@ -163,15 +137,15 @@ export default function StaffPage() {
 
               <TableBody>
                 {filteredStaff.map((member) => (
-                  <TableRow key={member.id}>
+                  <TableRow key={member._id}>
                     <TableCell className="px-5 font-medium">
-                      {getStaffName(member)}
+                      {member.name}
                     </TableCell>
-                    <TableCell>{member.department || "-"}</TableCell>
+                    <TableCell>{getDepartmentName(member)}</TableCell>
                     <TableCell>{member.phone || "-"}</TableCell>
                     <TableCell>{member.email || "-"}</TableCell>
                     <TableCell>
-                      <StatusBadge status="Active" />
+                      <StatusBadge status={member.status || "active"} />
                     </TableCell>
                     <TableCell className="pr-5 text-right">
                       <DropdownMenu>
@@ -180,7 +154,7 @@ export default function StaffPage() {
                             type="button"
                             variant="ghost"
                             size="icon"
-                            aria-label={`Open actions for ${getStaffName(member)}`}
+                            aria-label={`Open actions for ${member.name}`}
                           >
                             <MoreHorizontal className="size-4" />
                           </Button>

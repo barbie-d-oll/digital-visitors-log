@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { collection, getDocs } from "firebase/firestore";
 import {
   Eye,
   MoreHorizontal,
@@ -19,7 +18,7 @@ import {
   SelectField,
   StatusBadge,
   Toolbar,
-} from "../../components/dashboard/DashboardPrimitives";
+} from "../../_components/dashboard/DashboardPrimitives";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -36,7 +35,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { db } from "@/lib/firebase";
 
 type FirestoreDate = Date | string | { toDate: () => Date } | null | undefined;
 
@@ -101,15 +99,16 @@ export default function VisitorsPage() {
   const loadVisitors = useCallback(async () => {
     try {
       setLoading(true);
-
-      const snapshot = await getDocs(collection(db, "visitors"));
-
-      const data = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as Visitor[];
-
-      setVisitors(data);
+      const res = await fetch("/api/visitors?limit=200");
+      if (res.ok) {
+        const data = await res.json();
+        setVisitors(
+          data.visitors.map((v: Record<string, unknown>) => ({
+            ...v,
+            id: v._id as string,
+          }))
+        );
+      }
     } catch (error) {
       console.error(error);
     } finally {

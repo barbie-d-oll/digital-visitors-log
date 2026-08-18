@@ -2,14 +2,10 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { collection, getDocs } from "firebase/firestore";
 
- 
-import StatCard from "../components/dashboard/StatCard";
-import VisitorChart from "../components/dashboard/VisitorChart";
-import { db } from "@/lib/firebase";
-
-type FirestoreDate = Date | string | { toDate: () => Date } | null | undefined;
+import StatCard from "../_components/dashboard/StatCard";
+import VisitorChart from "../_components/dashboard/VisitorChart";
+import { useAuth } from "@/context/AuthContext";
 
 type VisitorFilters = {
   date: string;
@@ -18,17 +14,15 @@ type VisitorFilters = {
 };
 
 interface Visitor {
-  id: string;
+  _id: string;
   name?: string;
   company?: string;
   staff?: string;
   phone?: string;
   visitorCode?: string;
-  number?: string;
-  code?: string;
   purpose?: string;
-  checkIn?: FirestoreDate;
-  checkOut?: FirestoreDate;
+  checkIn?: string;
+  checkOut?: string;
   status?: string;
   [key: string]: unknown;
 }
@@ -49,79 +43,42 @@ const weekDays = [
   { label: "Saturday", value: "6" },
 ];
 
-const visitorSearchFields = [
-  "name",
-  "company",
-  "staff",
-  "phone",
-  "number",
-  "visitorCode",
-  "code",
-  "purpose",
-  "status",
-] as const;
-
-const getStringValue = (value: unknown) => {
-  if (typeof value === "string") {
-    return value;
-  }
-
-  if (value === null || value === undefined) {
-    return "";
-  }
-
-  return String(value);
-};
-
-const getVisitorDisplayValue = (
-  ...values: Array<string | null | undefined>
-) => {
-  const value = values.find((item) => item?.trim());
-
-  return value ?? "-";
-};
-
-const getVisitorDate = (value: FirestoreDate) => {
-  if (!value) {
-    return null;
-  }
-
-  const date =
-    value instanceof Date
-      ? value
-      : typeof value === "string"
-        ? new Date(value)
-        : value.toDate();
-
-  return Number.isNaN(date.getTime()) ? null : date;
-};
-
 const getDateInputValue = (date: Date) => {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
-
   return `${year}-${month}-${day}`;
 };
 
-const formatVisitorTime = (value: FirestoreDate) => {
-  const date = getVisitorDate(value);
-
-  return date ? date.toLocaleTimeString() : "-";
+const formatVisitorTime = (value?: string | null) => {
+  if (!value) return "-";
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? "-" : date.toLocaleTimeString();
 };
 
-const getVisitorSearchText = (visitor: Visitor) =>
-  visitorSearchFields
-    .map((field) => getStringValue(visitor[field]))
+const getVisitorDisplayValue = (...values: Array<string | null | undefined>) => {
+  const value = values.find((item) => item?.trim());
+  return value ?? "-";
+};
+
+const matchesVisitorFilters = (visitor: Visitor, filters: VisitorFilters) => {
+  const checkInDate = visitor.checkIn ? new Date(visitor.checkIn) : null;
+  const searchTerm = filters.search.trim().toLowerCase();
+
+  const searchText = [
+    visitor.name,
+    visitor.company,
+    visitor.staff,
+    visitor.phone,
+    visitor.visitorCode,
+    visitor.purpose,
+    visitor.status,
+  ]
+    .filter(Boolean)
     .join(" ")
     .toLowerCase();
 
-const matchesVisitorFilters = (visitor: Visitor, filters: VisitorFilters) => {
-  const checkInDate = getVisitorDate(visitor.checkIn);
-  const searchTerm = filters.search.trim().toLowerCase();
-
-  const matchesSearch =
-    !searchTerm || getVisitorSearchText(visitor).includes(searchTerm);
+  const matchesSearch = !searchTerm || searchText.includes(searchTerm);
   const matchesDate =
     !filters.date ||
     (checkInDate ? getDateInputValue(checkInDate) === filters.date : false);
@@ -132,90 +89,75 @@ const matchesVisitorFilters = (visitor: Visitor, filters: VisitorFilters) => {
   return matchesSearch && matchesDate && matchesDay;
 };
 
-const sortVisitorsByCheckIn = (visitors: Visitor[]) =>
-  [...visitors].sort((firstVisitor, secondVisitor) => {
-    const firstDate = getVisitorDate(firstVisitor.checkIn)?.getTime() ?? 0;
-    const secondDate = getVisitorDate(secondVisitor.checkIn)?.getTime() ?? 0;
-
-    return secondDate - firstDate;
-  });
-
 export default function DashboardPage() {
+  const { user } = useAuth();
   const [visitors, setVisitors] = useState<Visitor[]>([]);
   const [filters, setFilters] = useState<VisitorFilters>(emptyFilters);
+  const [loading, setLoading] = useState(true);
 
   const filteredVisitors = useMemo(
     () =>
-      sortVisitorsByCheckIn(
-        visitors.filter((visitor) => matchesVisitorFilters(visitor, filters)),
-      ),
-    [filters, visitors],
+      visitors
+        .filter((visitor) => matchesVisitorFilters(visitor, filters))
+        .sort((a, b) => {
+          const aTime = a.checkIn ? new Date(a.checkIn).getTime() : 0;
+          const bTime = b.checkIn ? new Date(b.checkIn).getTime() : 0;
+          return bTime - aTime;
+        }),
+    [filters, visitors]
   );
 
   const hasActiveFilters = Object.values(filters).some(Boolean);
 
   useEffect(() => {
-    const abortController = new AbortController();
-
     const loadVisitors = async () => {
       try {
-        const snapshot = await getDocs(collection(db, "visitors"));
-
-        if (!abortController.signal.aborted) {
-          const data = snapshot.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-          })) as Visitor[];
-
-          setVisitors(data);
+        const res = await fetch("/api/visitors");
+        if (res.ok) {
+          const data = await res.json();
+          setVisitors(data.visitors);
         }
       } catch (error) {
-        if (!abortController.signal.aborted) {
-          console.error("Error loading visitors:", error);
-        }
+        console.error("Error loading visitors:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
     loadVisitors();
-
-    return () => abortController.abort();
   }, []);
 
   const updateFilter = <K extends keyof VisitorFilters>(
     field: K,
-    value: VisitorFilters[K],
+    value: VisitorFilters[K]
   ) => {
-    setFilters((currentFilters) => ({
-      ...currentFilters,
-      [field]: value,
-    }));
+    setFilters((current) => ({ ...current, [field]: value }));
   };
 
-  const clearFilters = () => {
-    setFilters(emptyFilters);
-  };
+  const clearFilters = () => setFilters(emptyFilters);
 
   return (
     <div className="space-y-6 md:space-y-8">
-      <div className="">
-        <p className="text-sm md:text-base text-white/80">Welcome back,</p>
-
-        <h1 className="mt-2 text-3xl md:text-5xl font-bold">Barbara 👋</h1>
-
-        <p className="mt-4 text-base md:text-lg text-white/90">
+      <div>
+        <p className="text-sm md:text-base text-muted-foreground">Welcome back,</p>
+        <h1 className="mt-2 text-3xl md:text-5xl font-bold">
+          {user?.name?.split(" ")[0] ?? "Admin"} 👋
+        </h1>
+        <p className="mt-4 text-base md:text-lg text-muted-foreground">
           Monitor visitor check-ins, approvals, visitor history and company
           activity from one dashboard.
         </p>
       </div>
+
       <section className="rounded-xl border border-border bg-card p-6 shadow-enterprise-sm">
         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div className="min-w-0">
             <p className="text-sm font-medium text-brand">
-              Digital Visitor Log
+              {user?.organizationName || "Digital Visitor Log"}
             </p>
-            <h1 className="mt-2 text-2xl font-bold tracking-normal text-foreground md:text-3xl">
+            <h2 className="mt-2 text-2xl font-bold tracking-normal text-foreground md:text-3xl">
               Dashboard Overview
-            </h1>
+            </h2>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground md:text-base">
               Monitor visitor check-ins, approvals, visitor history, and company
               activity from one dashboard.
@@ -235,45 +177,35 @@ export default function DashboardPage() {
 
       <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
         <StatCard title="Total Visitors" value={visitors.length} />
-
-        {/* <StatCard title="Filtered Visitors" value={filteredVisitors.length} /> */}
-
         <StatCard
-          title="Pending"
-          value={
-            visitors.filter((visitor) => visitor.status === "Pending").length
-          }
+          title="Checked In"
+          value={visitors.filter((v) => v.status === "Checked In").length}
         />
-
         <StatCard
-          title="Checked Out"
+          title="Signed Out"
           value={
-            visitors.filter((visitor) => visitor.status === "Checked Out")
-              .length
+            visitors.filter(
+              (v) => v.status === "Signed Out" || v.status === "Checked Out"
+            ).length
           }
         />
       </div>
 
-      <div className="grid grid-cols-1   gap-6">
+      <div className="grid grid-cols-1 gap-6">
         <div className="rounded-xl border border-border bg-card p-6 shadow xl:col-span-2">
           <h3 className="mb-4 text-lg font-semibold">Visitor Check-ins</h3>
-
-          <div className=" ">
-            <VisitorChart visitors={visitors} />
-          </div>
+          <VisitorChart visitors={visitors} />
         </div>
-
       </div>
+
       <section className="rounded-xl border border-border bg-card p-6 shadow">
         <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h3 className="text-lg font-semibold">Filter Visitors</h3>
             <p className="text-sm text-muted-foreground">
-              Showing {filteredVisitors.length} of {visitors.length} visitor
-              records.
+              Showing {filteredVisitors.length} of {visitors.length} visitor records.
             </p>
           </div>
-
           <button
             type="button"
             onClick={clearFilters}
@@ -286,44 +218,34 @@ export default function DashboardPage() {
 
         <div className="grid gap-4 md:grid-cols-3">
           <label className="block">
-            <span className="mb-2 block text-sm font-semibold text-foreground">
-              Search visitor
-            </span>
+            <span className="mb-2 block text-sm font-semibold text-foreground">Search visitor</span>
             <input
               type="search"
               value={filters.search}
-              onChange={(event) => updateFilter("search", event.target.value)}
+              onChange={(e) => updateFilter("search", e.target.value)}
               placeholder="Name, company, phone, code..."
               className="min-h-11 w-full rounded-lg border border-input bg-background px-4 text-sm text-foreground outline-none transition placeholder:text-muted-foreground focus:border-ring focus:ring-4 focus:ring-ring/20"
             />
           </label>
-
           <label className="block">
-            <span className="mb-2 block text-sm font-semibold text-foreground">
-              Filter by date
-            </span>
+            <span className="mb-2 block text-sm font-semibold text-foreground">Filter by date</span>
             <input
               type="date"
               value={filters.date}
-              onChange={(event) => updateFilter("date", event.target.value)}
+              onChange={(e) => updateFilter("date", e.target.value)}
               className="min-h-11 w-full rounded-lg border border-input bg-background px-4 text-sm text-foreground outline-none transition focus:border-ring focus:ring-4 focus:ring-ring/20"
             />
           </label>
-
           <label className="block">
-            <span className="mb-2 block text-sm font-semibold text-foreground">
-              Filter by day
-            </span>
+            <span className="mb-2 block text-sm font-semibold text-foreground">Filter by day</span>
             <select
               value={filters.day}
-              onChange={(event) => updateFilter("day", event.target.value)}
+              onChange={(e) => updateFilter("day", e.target.value)}
               className="min-h-11 w-full rounded-lg border border-input bg-background px-4 text-sm text-foreground outline-none transition focus:border-ring focus:ring-4 focus:ring-ring/20"
             >
               <option value="">All days</option>
               {weekDays.map((day) => (
-                <option key={day.value} value={day.value}>
-                  {day.label}
-                </option>
+                <option key={day.value} value={day.value}>{day.label}</option>
               ))}
             </select>
           </label>
@@ -333,59 +255,55 @@ export default function DashboardPage() {
       <section className="rounded-xl border border-border bg-card p-6 shadow">
         <h3 className="mb-4 text-lg font-semibold">Recent Visitors</h3>
 
-        <div className="overflow-x-auto rounded-lg">
-          <table className="w-full min-w-[980px]">
-            <thead>
-              <tr className="border-b text-left">
-                <th className="py-3">Name</th>
-                <th>Company</th>
-                <th>Staff</th>
-                <th>Visitor Number</th>
-                <th>Generated Code</th>
-                <th>Time In</th>
-                <th>Time Out</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {filteredVisitors.length > 0 ? (
-                filteredVisitors.map((visitor) => (
-                  <tr key={visitor.id} className="border-b">
-                    <td className="py-4">
-                      {getVisitorDisplayValue(visitor.name)}
-                    </td>
-                    <td>{getVisitorDisplayValue(visitor.company)}</td>
-                    <td>{getVisitorDisplayValue(visitor.staff)}</td>
-                    <td>
-                      {getVisitorDisplayValue(visitor.phone, visitor.number)}
-                    </td>
-                    <td className="font-mono font-semibold tracking-[0.14em] text-foreground">
-                      {getVisitorDisplayValue(
-                        visitor.visitorCode,
-                        visitor.code,
-                      )}
-                    </td>
-                    <td>{formatVisitorTime(visitor.checkIn)}</td>
-                    <td>{formatVisitorTime(visitor.checkOut)}</td>
-                    <td className="font-semibold text-brand">
-                      {getVisitorDisplayValue(visitor.status)}
+        {loading ? (
+          <div className="flex items-center justify-center py-10 text-muted-foreground">
+            <span className="size-4 animate-spin rounded-full border-2 border-muted-foreground/30 border-t-muted-foreground mr-2" />
+            Loading visitors...
+          </div>
+        ) : (
+          <div className="overflow-x-auto rounded-lg">
+            <table className="w-full min-w-[980px]">
+              <thead>
+                <tr className="border-b text-left">
+                  <th className="py-3">Name</th>
+                  <th>Company</th>
+                  <th>Staff</th>
+                  <th>Phone</th>
+                  <th>Code</th>
+                  <th>Time In</th>
+                  <th>Time Out</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredVisitors.length > 0 ? (
+                  filteredVisitors.map((visitor) => (
+                    <tr key={visitor._id} className="border-b">
+                      <td className="py-4">{getVisitorDisplayValue(visitor.name)}</td>
+                      <td>{getVisitorDisplayValue(visitor.company)}</td>
+                      <td>{getVisitorDisplayValue(visitor.staff)}</td>
+                      <td>{getVisitorDisplayValue(visitor.phone)}</td>
+                      <td className="font-mono font-semibold tracking-[0.14em]">
+                        {getVisitorDisplayValue(visitor.visitorCode)}
+                      </td>
+                      <td>{formatVisitorTime(visitor.checkIn)}</td>
+                      <td>{formatVisitorTime(visitor.checkOut)}</td>
+                      <td className="font-semibold text-brand">
+                        {getVisitorDisplayValue(visitor.status)}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={8} className="py-10 text-center text-sm text-muted-foreground">
+                      No visitors match the current filters.
                     </td>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td
-                    colSpan={8}
-                    className="py-10 text-center text-sm text-muted-foreground"
-                  >
-                    No visitors match the current filters.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
       </section>
     </div>
   );

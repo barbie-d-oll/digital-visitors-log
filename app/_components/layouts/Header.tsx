@@ -11,11 +11,24 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+
+import type { UserProfile } from "@/context/AuthContext";
+
 type HeaderProps = {
   setSidebarOpen: (open: boolean) => void;
+  user: UserProfile | null;
 };
 
-export default function Header({ setSidebarOpen }: HeaderProps) {
+function getInitials(name: string): string {
+  return name
+    .split(/\s+/)
+    .map((w) => w[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+}
+
+export default function Header({ setSidebarOpen, user }: HeaderProps) {
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur">
       <div className="flex h-[4.5rem] items-center justify-between px-4 sm:px-8 lg:px-10">
@@ -56,15 +69,20 @@ export default function Header({ setSidebarOpen }: HeaderProps) {
 
           <div className="flex items-center gap-3">
             <Avatar size="lg">
-              <AvatarImage src="/image.png" alt="Barbara Logah" />
-              <AvatarFallback>BL</AvatarFallback>
+              <AvatarImage
+                src={user?.avatar || ""}
+                alt={user?.name || "User"}
+              />
+              <AvatarFallback>
+                {user ? getInitials(user.name) : "U"}
+              </AvatarFallback>
             </Avatar>
             <div className="hidden min-w-0 sm:block">
               <p className="truncate text-sm font-semibold text-foreground">
-                Barbara Logah
+                {user?.name || "User"}
               </p>
               <p className="truncate text-sm text-muted-foreground">
-                Company Administrator
+                {user?.organizationName || "Organization"}
               </p>
             </div>
           </div>

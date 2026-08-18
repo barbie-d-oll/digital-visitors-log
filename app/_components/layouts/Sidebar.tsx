@@ -3,23 +3,29 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  Building2,
   ChevronLeft,
   ChevronRight,
   ClipboardList,
   Home,
+  Layers,
   LogOut,
-  Moon,
   Settings,
   UserCheck,
-  UserPlus,
   Users,
   X,
+  Calendar,
+  ShieldAlert,
+  BarChart3,
+  MapPin,
+  ScrollText,
+  AlertTriangle,
+  ScanLine,
 } from "lucide-react";
 
 import { ModeToggle } from "@/components/common/Toggle";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/context/AuthContext";
 
 type SidebarProps = {
   sidebarOpen: boolean;
@@ -49,28 +55,75 @@ const navGroups = [
         icon: UserCheck,
       },
       {
+        name: "Appointments",
+        description: "Pre-registrations",
+        href: "/dashboard/appointments",
+        icon: Calendar,
+      },
+      {
         name: "Staff",
         description: "Hosts and employees",
         href: "/dashboard/staff",
         icon: Users,
+      },
+      {
+        name: "Departments",
+        description: "Teams and heads",
+        href: "/dashboard/departments",
+        icon: Layers,
       },
     ],
   },
   {
     label: "Management",
     items: [
-      
+      {
+        name: "Analytics",
+        description: "Insights and trends",
+        href: "/dashboard/analytics",
+        icon: BarChart3,
+      },
       {
         name: "Reports",
         description: "Reports and exports",
         href: "/dashboard/report",
         icon: ClipboardList,
       },
+      {
+        name: "Blocklist",
+        description: "Blocked and watchlisted",
+        href: "/dashboard/blocklist",
+        icon: ShieldAlert,
+      },
+      {
+        name: "Emergency",
+        description: "Who's on-premises now",
+        href: "/dashboard/emergency",
+        icon: AlertTriangle,
+      },
+      {
+        name: "Locations",
+        description: "Multi-site management",
+        href: "/dashboard/locations",
+        icon: MapPin,
+      },
     ],
   },
   {
     label: "System",
     items: [
+      {
+        name: "Kiosk & QR",
+        description: "Reception setup",
+        href: "/dashboard/kiosk",
+        icon: ScanLine,
+      },
+      {
+        name: "Audit Log",
+        description: "Activity history",
+        href: "/dashboard/audit-log",
+        icon: ScrollText,
+      },
       {
         name: "Settings",
         description: "Workspace preferences",
@@ -88,6 +141,7 @@ function SidebarContent({
   mode,
 }: SidebarContentProps) {
   const pathname = usePathname();
+  const { logout } = useAuth();
   const compact = mode === "desktop" && collapsed;
 
   const isActive = (href: string) =>
@@ -151,7 +205,7 @@ function SidebarContent({
         )}
       </div>
 
-      <nav className="flex-1 overflow-hidden scroll-auto h-full px-4 py-5">
+      <nav className="flex-1 overflow-y-auto px-4 py-5">
         <div className="space-y-7">
           {navGroups.map((group) => (
             <div key={group.label}>
@@ -250,19 +304,18 @@ function SidebarContent({
         </div>
 
         <Button
-          asChild
           variant="ghost"
           className={cn(
             "h-12 w-full justify-start gap-4 px-0 text-destructive hover:bg-destructive/10 hover:text-destructive",
             compact && "justify-center",
           )}
+          onClick={() => logout()}
+          title={compact ? "Sign out" : undefined}
         >
-          <Link href="/logout" title={compact ? "Sign out" : undefined}>
-            <LogOut className="size-5" />
-            <span className={cn("font-semibold", compact && "hidden")}>
-              Sign out
-            </span>
-          </Link>
+          <LogOut className="size-5" />
+          <span className={cn("font-semibold", compact && "hidden")}>
+            Sign out
+          </span>
         </Button>
       </div>
     </>

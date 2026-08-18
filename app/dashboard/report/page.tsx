@@ -1,7 +1,6 @@
 "use client";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { collection, getDocs } from "firebase/firestore";
 import {
   Download,
   FileText,
@@ -29,7 +28,7 @@ import {
   SelectField,
   StatusBadge,
   Toolbar,
-} from "../../components/dashboard/DashboardPrimitives";
+} from "../../_components/dashboard/DashboardPrimitives";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -39,7 +38,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { db } from "@/lib/firebase";
 
 const pageSize = 10;
 
@@ -161,12 +159,16 @@ export default function ReportsPage() {
     setLoading(true);
 
     try {
-      const snapshot = await getDocs(collection(db, "visitors"));
-      const data = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as Visitor[];
-      setVisitors(data);
+      const res = await fetch("/api/visitors?limit=500");
+      if (res.ok) {
+        const data = await res.json();
+        setVisitors(
+          data.visitors.map((v: Record<string, unknown>) => ({
+            ...v,
+            id: v._id as string,
+          }))
+        );
+      }
     } catch (error) {
       console.error("Failed to load visitor reports:", error);
     } finally {

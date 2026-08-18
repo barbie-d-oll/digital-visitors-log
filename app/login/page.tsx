@@ -1,5 +1,5 @@
-import HomeLayoutPage from "@/components/home/home-layout";
+import { redirect } from "next/navigation";
 
 export default function LoginPage() {
-  return <HomeLayoutPage />;
+  redirect("/auth/login");
 }
