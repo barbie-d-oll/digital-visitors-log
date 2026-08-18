@@ -107,7 +107,7 @@
   --shadow-overlay: 0 24px 64px rgba(15, 23, 42, 0.18);
   --sidebar: #fffefb;
   --sidebar-foreground: #183b38;
-  --sidebar-primary: #1b6b61;
+  --sidebar-primary: var(--brand-gold);
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #e4f1eb;
   --sidebar-accent-foreground: #1b6b61;
@@ -159,7 +159,7 @@
   --shadow-overlay: 0 24px 64px rgba(0, 0, 0, 0.4);
   --sidebar: #0f2724;
   --sidebar-foreground: #f7fffc;
-  --sidebar-primary: #86d7c9;
+  --sidebar-primary:  var(--brand-gold);
   --sidebar-primary-foreground: #071a18;
   --sidebar-accent: #173b36;
   --sidebar-accent-foreground: #dff7f0;
@@ -255,5 +255,57 @@
   to {
     opacity: 1;
     transform: scale(1) rotate(0);
+  }
+}
+
+/* Lightweight reveal animations for marketing page (respects prefers-reduced-motion) */
+.reveal {
+  opacity: 0;
+  transform: translateY(12px) scale(.995);
+  transition: opacity .6s ease, transform .65s cubic-bezier(.2,.9,.3,1);
+  will-change: opacity, transform;
+}
+.reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal,
+  .reveal * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* Marquee / logo slider for TrustSection */
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.marquee {
+  overflow: hidden;
+}
+
+.marquee-track {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+  will-change: transform;
+  animation: marquee var(--marquee-duration, 24s) linear infinite;
+}
+
+.marquee-track:hover {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track {
+    animation: none !important;
   }
 }

@@ -3,9 +3,18 @@
 import * as React from "react";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 
-export function ThemeProvider({
-  children,
-  ...props
-}: React.ComponentProps<typeof NextThemesProvider>) {
+export function ThemeProvider({ children, ...props }: React.ComponentProps<typeof NextThemesProvider>) {
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    // During SSR and first paint, avoid rendering next-themes provider
+    // because it injects a script tag which can trigger warnings.
+    return <>{children}</>;
+  }
+
   return <NextThemesProvider {...props}>{children}</NextThemesProvider>;
 }

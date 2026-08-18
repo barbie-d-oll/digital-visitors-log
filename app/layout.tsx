@@ -4,15 +4,15 @@ import { PwaServiceWorker } from "@/components/pwa-service-worker";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme/Theme-provider";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+// const geistSans = Geist({
+//   variable: "--font-geist-sans",
+//   subsets: ["latin"],
+// });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+// const geistMono = Geist_Mono({
+//   variable: "--font-geist-mono",
+//   subsets: ["latin"],
+// });
 
 export const metadata: Metadata = {
   title: "Visitor Log | Digital Welcome Desk",
@@ -43,7 +43,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`  h-full antialiased`}
     >
       <body suppressHydrationWarning className="min-h-full flex flex-col">
         <ThemeProvider

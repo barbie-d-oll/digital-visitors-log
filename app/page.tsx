@@ -1,6 +1,5 @@
-import HomeLayoutPage from "@/components/home/home-layout";
- 
+import MarketingPage from "./marketing/page";
 
-export default  function Home( ) {
-  return <HomeLayoutPage />;
+export default function Home() {
+  return <MarketingPage />;
 }

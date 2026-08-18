@@ -97,7 +97,7 @@ function SidebarContent({
 
   return (
     <>
-      <div className="flex h-[4.5rem]  items-center gap-3 border-b border-sidebar-border px-4 overflow-hidden sm:px-6 lg:px-8 ">
+      <div className="flex h-18  items-center gap-3 border-b border-sidebar-border px-4 overflow-hidden sm:px-6 lg:px-8 ">
         <Link
           href="/dashboard"
           onClick={() => setSidebarOpen(false)}
