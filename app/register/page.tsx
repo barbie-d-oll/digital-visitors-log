@@ -233,6 +233,7 @@ function RegistrationContent() {
             name,
             phone,
             visitorCode: generatedVisitorCode,
+            organizationSlug,
           }),
         });
 

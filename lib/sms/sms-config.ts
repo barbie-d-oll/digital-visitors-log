@@ -31,7 +31,6 @@ export async function smsConfig(values: MsgProps) {
     let sms_key = process.env.SMS_TOKEN;
     let sender = process.env.SMS_SENDER || "HWS Tech";
 
-    // If organizationId provided, check for org-specific SMS settings
     if (organizationId) {
       await connectToDB();
       const org = await Organization.findById(organizationId);
