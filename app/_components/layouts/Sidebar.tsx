@@ -25,7 +25,7 @@ import {
 import { ModeToggle } from "@/components/common/Toggle";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth, UserProfile } from "@/context/AuthContext";
 
 type SidebarProps = {
   sidebarOpen: boolean;
@@ -33,8 +33,12 @@ type SidebarProps = {
   collapsed: boolean;
   setCollapsed: (collapsed: boolean) => void;
 };
+type HeaderProps = {
+  setSidebarOpen: (open: boolean) => void;
+  user: UserProfile | null;
+};
 
-type SidebarContentProps = SidebarProps & {
+type SidebarContentProps = SidebarProps & HeaderProps & {
   mode: "desktop" | "mobile";
 };
 
@@ -136,10 +140,11 @@ const navGroups = [
 
 function SidebarContent({
   setSidebarOpen,
+  user,
   collapsed,
   setCollapsed,
   mode,
-}: SidebarContentProps) {
+}: SidebarContentProps & HeaderProps) {
   const pathname = usePathname();
   const { logout } = useAuth();
   const compact = mode === "desktop" && collapsed;
@@ -157,22 +162,15 @@ function SidebarContent({
           onClick={() => setSidebarOpen(false)}
           className="min-w-0 flex-1 rounded-lg focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/30"
         >
-          <span
-            className={cn(
-              "block truncate text-lg font-semibold text-sidebar-foreground transition-opacity",
-              compact && "opacity-0",
-            )}
-          >
-            Digital Visitor Log
-          </span>
-          <span
-            className={cn(
-              "block truncate text-sm text-sidebar-foreground/65 transition-opacity",
-              compact && "opacity-0",
-            )}
-          >
-            Digital welcome desk
-          </span>
+          <div className="hidden min-w-0 sm:block">
+              <p className="truncate text-sm font-semibold text-foreground">
+                {user?.name || "User"}
+              </p>
+              <p className="truncate text-sm text-muted-foreground">
+                {user?.organizationName || "Organization"}
+              </p>
+            </div>
+           
         </Link>
 
         {mode === "desktop" ? (
@@ -323,6 +321,8 @@ function SidebarContent({
 }
 
 export default function Sidebar(props: SidebarProps) {
+  const { user } = useAuth();
+
   return (
     <>
       {props.sidebarOpen ? (
@@ -340,7 +340,7 @@ export default function Sidebar(props: SidebarProps) {
           props.sidebarOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >
-        <SidebarContent {...props} mode="mobile" />
+        <SidebarContent user={user} {...props} mode="mobile" />
       </aside>
 
       <aside
@@ -349,7 +349,7 @@ export default function Sidebar(props: SidebarProps) {
           props.collapsed ? "w-20" : "w-80",
         )}
       >
-        <SidebarContent {...props} mode="desktop" />
+        <SidebarContent user={user} {...props} mode="desktop" />
       </aside>
     </>
   );

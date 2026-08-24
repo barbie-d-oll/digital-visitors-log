@@ -3,6 +3,7 @@
 import { Bell, Menu } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import FullscreenButton from "@/components/common/Fullscreen";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -46,6 +47,7 @@ export default function Header({ setSidebarOpen, user }: HeaderProps) {
         <div className="hidden md:block" aria-hidden="true" />
 
         <div className="ml-auto flex items-center gap-4">
+        <FullscreenButton />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -77,14 +79,14 @@ export default function Header({ setSidebarOpen, user }: HeaderProps) {
                 {user ? getInitials(user.name) : "U"}
               </AvatarFallback>
             </Avatar>
-            <div className="hidden min-w-0 sm:block">
+            {/* <div className="hidden min-w-0 sm:block">
               <p className="truncate text-sm font-semibold text-foreground">
                 {user?.name || "User"}
               </p>
               <p className="truncate text-sm text-muted-foreground">
                 {user?.organizationName || "Organization"}
               </p>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

@@ -86,10 +86,10 @@ const HomeLayoutPage = () => {
       {/* Hero Section */}
       <section className="flex min-h-svh flex-col items-center justify-center px-6 pt-24 pb-16 text-center max-[620px]:px-5 max-[620px]:pt-24">
         <div className="w-full max-w-[52rem] motion-safe:animate-[visitor-reveal_.75s_.1s_ease-out_both]">
-          <div className="mx-auto mb-6 flex items-center justify-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-xs font-semibold text-muted-foreground shadow-sm w-fit">
+          {/* <div className="mx-auto mb-6 flex items-center justify-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-xs font-semibold text-muted-foreground shadow-sm w-fit">
             <span className="size-2 rounded-full bg-brand-gold animate-pulse" />
             Trusted by teams across Africa
-          </div>
+          </div> */}
 
           <h1 className="mx-auto max-w-[48rem] text-[clamp(2.8rem,6vw,5.2rem)] leading-[.96] font-bold tracking-[-.06em] text-balance">
             The modern visitor book
@@ -154,9 +154,9 @@ const HomeLayoutPage = () => {
                   key={feature.title}
                   className="rounded-2xl border border-border bg-card p-6 shadow-[0_14px_35px_rgba(48,73,68,.06)] transition hover:-translate-y-0.5 hover:shadow-[0_20px_45px_rgba(48,73,68,.1)]"
                 >
-                  <span className="grid size-11 place-items-center rounded-xl bg-brand-gold/10 text-brand-gold">
+                  {/* <span className="grid size-11 place-items-center rounded-xl bg-brand-gold/10 text-brand-gold">
                     <Icon size={20} />
-                  </span>
+                  </span> */}
                   <h3 className="mt-4 text-base font-bold text-foreground">{feature.title}</h3>
                   <p className="mt-2 text-sm leading-6 text-muted-foreground">
                     {feature.description}
