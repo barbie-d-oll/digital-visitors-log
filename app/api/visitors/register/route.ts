@@ -17,7 +17,26 @@ export async function POST(request: Request) {
     await connectToDB();
 
     const body = await request.json();
-    const { name, phone, company, purpose, staff, organizationSlug, locationId } = body;
+    const {
+      name,
+      phone,
+      company,
+      purpose,
+      staff,
+      staffId,
+      departmentId,
+      organizationSlug,
+      locationId,
+      visitTargetType,
+    } = body;
+    const normalizedVisitTargetType =
+      visitTargetType === "department" ? "department" : "individual";
+    const normalizedStaffId =
+      typeof staffId === "string" && staffId.trim() ? staffId.trim() : undefined;
+    const normalizedDepartmentId =
+      typeof departmentId === "string" && departmentId.trim()
+        ? departmentId.trim()
+        : undefined;
 
     if (!name?.trim() || !phone?.trim() || !purpose?.trim() || !staff?.trim()) {
       return NextResponse.json(
@@ -107,8 +126,11 @@ export async function POST(request: Request) {
         visitorCompany: company?.trim(),
         purpose: purpose.trim(),
         staffName: staff.trim(),
+        staffId: normalizedStaffId,
+        departmentId: normalizedDepartmentId,
         organizationId: organization._id.toString(),
         checkInTime: new Date(),
+        visitTargetType: normalizedVisitTargetType,
       }).catch((err) => console.error("Host notification error:", err));
     }
 
@@ -121,6 +143,9 @@ export async function POST(request: Request) {
       details: {
         visitorName: name.trim(),
         staff: staff.trim(),
+        staffId: normalizedStaffId,
+        departmentId: normalizedDepartmentId,
+        visitTargetType: normalizedVisitTargetType,
         isReturning,
         watchlisted: !!watchEntry,
       },

@@ -14,6 +14,7 @@ export async function GET(request: NextRequest) {
     await connectToDB();
 
     const slug = request.nextUrl.searchParams.get("slug");
+    const search = request.nextUrl.searchParams.get("search")?.trim() || "";
     if (!slug) {
       return NextResponse.json({ error: "Organization slug is required." }, { status: 400 });
     }
@@ -27,12 +28,24 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Organization not found." }, { status: 404 });
     }
 
+    const shouldSearchStaff = search.length >= 1;
+    const staffQuery = {
+      organizationId: org._id,
+      status: "active" as const,
+      ...(shouldSearchStaff
+        ? { name: { $regex: escapeRegex(search), $options: "i" as const } }
+        : {}),
+    };
+
     const [staff, departments] = await Promise.all([
-      Staff.find({ organizationId: org._id, status: "active" })
-        .select("name departmentId position")
-        .populate("departmentId", "name")
-        .sort({ name: 1 })
-        .lean(),
+      shouldSearchStaff
+        ? Staff.find(staffQuery)
+            .select("name departmentId position")
+            .populate("departmentId", "name")
+            .sort({ name: 1 })
+            .limit(8)
+            .lean()
+        : Promise.resolve([]),
       Department.find({ organizationId: org._id, status: "active" })
         .select("name")
         .sort({ name: 1 })
@@ -61,4 +74,8 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+function escapeRegex(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
