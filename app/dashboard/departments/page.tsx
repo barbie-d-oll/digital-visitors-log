@@ -1,7 +1,15 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Layers, MoreHorizontal, Plus, RefreshCw } from "lucide-react";
+import {
+  Layers,
+  Loader2,
+  MoreHorizontal,
+  Pencil,
+  Plus,
+  RefreshCw,
+  Trash2,
+} from "lucide-react";
 import Link from "next/link";
 
 import {
@@ -13,6 +21,14 @@ import {
   Toolbar,
 } from "../../_components/dashboard/DashboardPrimitives";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -40,31 +56,81 @@ interface Department {
 export default function DepartmentsPage() {
   const [departments, setDepartments] = useState<Department[]>([]);
   const [loading, setLoading] = useState(true);
+  const [departmentToDelete, setDepartmentToDelete] =
+    useState<Department | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
+
+  const fetchDepartments = useCallback(async () => {
+    const res = await fetch("/api/departments");
+    if (!res.ok) return null;
+
+    const data = await res.json();
+    return (data.departments || []) as Department[];
+  }, []);
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/departments");
-      if (res.ok) {
-        const data = await res.json();
-        setDepartments(data.departments);
-      }
+      const nextDepartments = await fetchDepartments();
+      if (nextDepartments) setDepartments(nextDepartments);
     } catch (err) {
       console.error(err);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [fetchDepartments]);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    let isCurrent = true;
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Delete this department?")) return;
+    fetchDepartments()
+      .then((nextDepartments) => {
+        if (isCurrent && nextDepartments) setDepartments(nextDepartments);
+      })
+      .catch(console.error)
+      .finally(() => {
+        if (isCurrent) setLoading(false);
+      });
+
+    return () => {
+      isCurrent = false;
+    };
+  }, [fetchDepartments]);
+
+  const handleDeleteDialogChange = (open: boolean) => {
+    if (!open && !deleting) {
+      setDepartmentToDelete(null);
+      setDeleteError("");
+    }
+  };
+
+  const deleteDepartment = async () => {
+    if (!departmentToDelete) return;
+
+    setDeleting(true);
+    setDeleteError("");
+
     try {
-      await fetch(`/api/departments/${id}`, { method: "DELETE" });
-      load();
+      const res = await fetch(`/api/departments/${departmentToDelete._id}`, {
+        method: "DELETE",
+      });
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        setDeleteError(data.error || "Failed to delete department.");
+        return;
+      }
+
+      setDepartments((current) =>
+        current.filter((dept) => dept._id !== departmentToDelete._id),
+      );
+      setDepartmentToDelete(null);
     } catch (err) {
       console.error(err);
+      setDeleteError("Failed to delete department.");
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -128,7 +194,17 @@ export default function DepartmentsPage() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-40">
                           <DropdownMenuLabel>Department</DropdownMenuLabel>
-                          <DropdownMenuItem variant="destructive" onClick={() => handleDelete(dept._id)}>
+                          <DropdownMenuItem asChild>
+                            <Link href={`/dashboard/departments/${dept._id}/edit`}>
+                              <Pencil className="size-4" />
+                              Edit profile
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            variant="destructive"
+                            onClick={() => setDepartmentToDelete(dept)}
+                          >
+                            <Trash2 className="size-4" />
                             Delete
                           </DropdownMenuItem>
                         </DropdownMenuContent>
@@ -154,6 +230,52 @@ export default function DepartmentsPage() {
           </div>
         )}
       </DashboardPanel>
+
+      <Dialog
+        open={Boolean(departmentToDelete)}
+        onOpenChange={handleDeleteDialogChange}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader className="pr-8">
+            <DialogTitle>Delete department?</DialogTitle>
+            <DialogDescription>
+              This will permanently remove{" "}
+              <span className="font-medium text-foreground">
+                {departmentToDelete?.name || "this department"}
+              </span>{" "}
+              from your department directory.
+            </DialogDescription>
+          </DialogHeader>
+
+          {deleteError ? (
+            <p className="text-sm text-destructive">{deleteError}</p>
+          ) : null}
+
+          <DialogFooter className="mt-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => handleDeleteDialogChange(false)}
+              disabled={deleting}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={deleteDepartment}
+              disabled={deleting}
+            >
+              {deleting ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Trash2 className="size-4" />
+              )}
+              {deleting ? "Deleting..." : "Delete Department"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

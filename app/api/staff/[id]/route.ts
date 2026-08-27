@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import mongoose from "mongoose";
 
 import { connectToDB } from "@/lib/db/mongoose";
 import { getAuthUser } from "@/lib/auth/jwt";
@@ -16,6 +17,10 @@ export async function GET(
 
     await connectToDB();
     const { id } = await params;
+
+    if (!mongoose.isValidObjectId(id)) {
+      return NextResponse.json({ error: "Staff not found." }, { status: 404 });
+    }
 
     const member = await Staff.findOne({
       _id: id,
@@ -50,12 +55,71 @@ export async function PATCH(
 
     await connectToDB();
     const { id } = await params;
+    if (!mongoose.isValidObjectId(id)) {
+      return NextResponse.json({ error: "Staff not found." }, { status: 404 });
+    }
+
     const body = await request.json();
+    const name = typeof body.name === "string" ? body.name.trim() : "";
+    const email =
+      typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
+    const phone = typeof body.phone === "string" ? body.phone.trim() : "";
+    const position =
+      typeof body.position === "string" ? body.position.trim() : "";
+    const departmentId =
+      typeof body.departmentId === "string" ? body.departmentId.trim() : "";
+    const status = body.status === "inactive" ? "inactive" : "active";
+
+    if (!name || !email) {
+      return NextResponse.json(
+        { error: "Name and email are required." },
+        { status: 400 }
+      );
+    }
+
+    if (departmentId && !mongoose.isValidObjectId(departmentId)) {
+      return NextResponse.json(
+        { error: "Please choose a valid department." },
+        { status: 400 }
+      );
+    }
+
+    const existing = await Staff.findOne({
+      _id: { $ne: id },
+      email,
+      organizationId: authUser.organizationId,
+    });
+
+    if (existing) {
+      return NextResponse.json(
+        { error: "A staff member with this email already exists." },
+        { status: 409 }
+      );
+    }
+
+    const update: {
+      $set: Record<string, unknown>;
+      $unset?: Record<string, string>;
+    } = {
+      $set: {
+        name,
+        email,
+        phone,
+        position,
+        status,
+      },
+    };
+
+    if (departmentId) {
+      update.$set.departmentId = departmentId;
+    } else {
+      update.$unset = { departmentId: "" };
+    }
 
     const member = await Staff.findOneAndUpdate(
       { _id: id, organizationId: authUser.organizationId },
-      { $set: body },
-      { new: true }
+      update,
+      { returnDocument: "after", runValidators: true }
     )
       .populate("departmentId", "name")
       .lean();
@@ -86,6 +150,10 @@ export async function DELETE(
 
     await connectToDB();
     const { id } = await params;
+
+    if (!mongoose.isValidObjectId(id)) {
+      return NextResponse.json({ error: "Staff not found." }, { status: 404 });
+    }
 
     const member = await Staff.findOneAndDelete({
       _id: id,

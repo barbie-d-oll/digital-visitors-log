@@ -2,7 +2,15 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { MoreHorizontal, Plus, RefreshCw, Users } from "lucide-react";
+import {
+  Loader2,
+  MoreHorizontal,
+  Pencil,
+  Plus,
+  RefreshCw,
+  Trash2,
+  Users,
+} from "lucide-react";
 
 import {
   DashboardPanel,
@@ -14,6 +22,14 @@ import {
   Toolbar,
 } from "../../_components/dashboard/DashboardPrimitives";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -51,29 +67,89 @@ export default function StaffPage() {
   const [staff, setStaff] = useState<StaffMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [staffToDelete, setStaffToDelete] = useState<StaffMember | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
+
+  const fetchStaff = useCallback(async (nextSearch: string) => {
+    const res = await fetch(
+      `/api/staff?search=${encodeURIComponent(nextSearch)}`,
+    );
+
+    if (!res.ok) return null;
+
+    const data = await res.json();
+    return (data.staff || []) as StaffMember[];
+  }, []);
 
   const loadStaff = useCallback(async () => {
+    setLoading(true);
     try {
-      setLoading(true);
-      const res = await fetch(`/api/staff?search=${encodeURIComponent(search)}`);
-      if (res.ok) {
-        const data = await res.json();
-        setStaff(data.staff);
-      }
+      const nextStaff = await fetchStaff(search);
+      if (nextStaff) setStaff(nextStaff);
     } catch (error) {
       console.error(error);
     } finally {
       setLoading(false);
     }
-  }, [search]);
+  }, [fetchStaff, search]);
 
   useEffect(() => {
-    loadStaff();
-  }, [loadStaff]);
+    let isCurrent = true;
+
+    fetchStaff(search)
+      .then((nextStaff) => {
+        if (isCurrent && nextStaff) setStaff(nextStaff);
+      })
+      .catch(console.error)
+      .finally(() => {
+        if (isCurrent) setLoading(false);
+      });
+
+    return () => {
+      isCurrent = false;
+    };
+  }, [fetchStaff, search]);
 
   const filteredStaff = useMemo(() => {
     return [...staff].sort((a, b) => a.name.localeCompare(b.name));
   }, [staff]);
+
+  const handleDeleteDialogChange = (open: boolean) => {
+    if (!open && !deleting) {
+      setStaffToDelete(null);
+      setDeleteError("");
+    }
+  };
+
+  const deleteStaff = async () => {
+    if (!staffToDelete) return;
+
+    setDeleting(true);
+    setDeleteError("");
+
+    try {
+      const res = await fetch(`/api/staff/${staffToDelete._id}`, {
+        method: "DELETE",
+      });
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        setDeleteError(data.error || "Failed to delete staff member.");
+        return;
+      }
+
+      setStaff((current) =>
+        current.filter((member) => member._id !== staffToDelete._id),
+      );
+      setStaffToDelete(null);
+    } catch (error) {
+      console.error(error);
+      setDeleteError("Failed to delete staff member.");
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   return (
     <div className="space-y-8">
@@ -99,7 +175,10 @@ export default function StaffPage() {
             <SearchField
               label="Search staff"
               value={search}
-              onChange={(event) => setSearch(event.target.value)}
+              onChange={(event) => {
+                setLoading(true);
+                setSearch(event.target.value);
+              }}
               placeholder="Search name, department, email..."
               className="md:max-w-sm"
             />
@@ -161,8 +240,17 @@ export default function StaffPage() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-40">
                           <DropdownMenuLabel>Staff</DropdownMenuLabel>
-                          <DropdownMenuItem>Edit profile</DropdownMenuItem>
-                          <DropdownMenuItem variant="destructive">
+                          <DropdownMenuItem asChild>
+                            <Link href={`/dashboard/staff/${member._id}/edit`}>
+                              <Pencil className="size-4" />
+                              Edit profile
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            variant="destructive"
+                            onClick={() => setStaffToDelete(member)}
+                          >
+                            <Trash2 className="size-4" />
                             Delete
                           </DropdownMenuItem>
                         </DropdownMenuContent>
@@ -182,6 +270,52 @@ export default function StaffPage() {
             </div>
           )}
         </DashboardPanel>
+
+        <Dialog
+          open={Boolean(staffToDelete)}
+          onOpenChange={handleDeleteDialogChange}
+        >
+          <DialogContent className="max-w-md">
+            <DialogHeader className="pr-8">
+              <DialogTitle>Delete staff member?</DialogTitle>
+              <DialogDescription>
+                This will permanently remove{" "}
+                <span className="font-medium text-foreground">
+                  {staffToDelete?.name || "this staff member"}
+                </span>{" "}
+                from your staff directory.
+              </DialogDescription>
+            </DialogHeader>
+
+            {deleteError ? (
+              <p className="text-sm text-destructive">{deleteError}</p>
+            ) : null}
+
+            <DialogFooter className="mt-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => handleDeleteDialogChange(false)}
+                disabled={deleting}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={deleteStaff}
+                disabled={deleting}
+              >
+                {deleting ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <Trash2 className="size-4" />
+                )}
+                {deleting ? "Deleting..." : "Delete Staff"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
     </div>
   );
 }

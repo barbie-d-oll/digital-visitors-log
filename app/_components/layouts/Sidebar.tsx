@@ -231,7 +231,7 @@ function SidebarContent({
                       className={cn(
                         "group flex min-h-16 items-center gap-4 rounded-lg px-4 py-1 outline-none transition focus-visible:ring-3 focus-visible:ring-ring/30",
                         active
-                          ? "bg-sidebar-primary text-sidebar-primary-foreground"
+                          ? "bg-primary text-sidebar-primary-foreground"
                           : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                         compact && "min-h-12 justify-center px-0",
                       )}

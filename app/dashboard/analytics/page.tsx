@@ -150,7 +150,7 @@ function StatTile({ icon: Icon, label, value }: { icon: React.ElementType; label
   return (
     <div className="rounded-xl border border-border bg-card p-5 shadow-enterprise-sm">
       <div className="flex items-center gap-3">
-        <span className="grid size-10 place-items-center rounded-lg bg-primary/10 text-primary">
+        <span className="grid size-10 place-items-center rounded-lg  text-primary">
           <Icon className="size-5" />
         </span>
         <div>
