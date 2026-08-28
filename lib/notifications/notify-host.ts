@@ -50,29 +50,44 @@ export async function notifyHost(params: NotifyHostParams): Promise<void> {
         organizationId,
       });
 
-      if (!department?.headId) {
+      if (!department) {
+        console.warn(`Department "${staffName}" not found for notification.`);
+        return;
+      }
+
+      const headIds = getDepartmentHeadIds(department);
+      if (headIds.length === 0) {
         console.warn(`Department "${staffName}" has no head for notification.`);
         return;
       }
 
-      const head = await Staff.findById(department.headId);
-      if (!head) {
+      const heads = await Staff.find({
+        _id: { $in: headIds },
+        organizationId,
+        status: "active",
+      });
+
+      if (heads.length === 0) {
         console.warn(`Department head for "${department.name}" not found.`);
         return;
       }
 
-      await notifyPerson({
-        person: { name: head.name, email: head.email, phone: head.phone },
-        visitorName,
-        visitorCompany,
-        purpose,
-        orgName,
-        organizationId,
-        checkInTime,
-        org,
-        isDepartmentHead: true,
-        departmentName: department.name,
-      });
+      await Promise.all(
+        heads.map((head) =>
+          notifyPerson({
+            person: { name: head.name, email: head.email, phone: head.phone },
+            visitorName,
+            visitorCompany,
+            purpose,
+            orgName,
+            organizationId,
+            checkInTime,
+            org,
+            isDepartmentHead: true,
+            departmentName: department.name,
+          }),
+        ),
+      );
 
       return;
     }
@@ -103,25 +118,36 @@ export async function notifyHost(params: NotifyHostParams): Promise<void> {
 
     // --- Notify the department head (if different from the host) ---
     if (host.departmentId) {
-      const department = await Department.findById(host.departmentId).populate("headId");
+      const department = await Department.findById(host.departmentId).select(
+        "name headId headIds",
+      );
 
-      if (department?.headId) {
-        const head = await Staff.findById(department.headId);
+      if (department) {
+        const headIds = getDepartmentHeadIds(department).filter(
+          (headId) => headId !== host._id.toString(),
+        );
+        const heads = await Staff.find({
+          _id: { $in: headIds },
+          organizationId,
+          status: "active",
+        });
 
-        if (head && head._id.toString() !== host._id.toString()) {
-          await notifyPerson({
-            person: { name: head.name, email: head.email, phone: head.phone },
-            visitorName,
-            visitorCompany,
-            purpose,
-            orgName,
-            organizationId,
-            checkInTime,
-            org,
-            isDepartmentHead: true,
-            departmentName: department.name,
-          });
-        }
+        await Promise.all(
+          heads.map((head) =>
+            notifyPerson({
+              person: { name: head.name, email: head.email, phone: head.phone },
+              visitorName,
+              visitorCompany,
+              purpose,
+              orgName,
+              organizationId,
+              checkInTime,
+              org,
+              isDepartmentHead: true,
+              departmentName: department.name,
+            }),
+          ),
+        );
       }
     }
   } catch (error) {
@@ -171,7 +197,7 @@ async function findDepartment({
       _id: departmentId,
       organizationId,
       status: "active",
-    }).select("name headId");
+    }).select("name headId headIds");
 
     if (department) {
       return department;
@@ -182,7 +208,49 @@ async function findDepartment({
     name: { $regex: new RegExp(`^${escapeRegex(departmentName.trim())}$`, "i") },
     organizationId,
     status: "active",
-  }).select("name headId");
+  }).select("name headId headIds");
+}
+
+function getObjectId(value: unknown): string | null {
+  if (!value) {
+    return null;
+  }
+
+  if (typeof value === "string") {
+    return mongoose.isValidObjectId(value) ? value : null;
+  }
+
+  if (value instanceof mongoose.Types.ObjectId) {
+    return value.toString();
+  }
+
+  if (typeof value === "object" && "_id" in value) {
+    return getObjectId((value as { _id?: unknown })._id);
+  }
+
+  const valueWithToString = value as { toString?: () => string };
+  if (typeof valueWithToString.toString === "function") {
+    const id = valueWithToString.toString();
+    return mongoose.isValidObjectId(id) ? id : null;
+  }
+
+  return null;
+}
+
+function getDepartmentHeadIds(department: {
+  headId?: unknown;
+  headIds?: unknown;
+}) {
+  const headIds = Array.isArray(department.headIds)
+    ? department.headIds.map(getObjectId).filter((id): id is string => Boolean(id))
+    : [];
+
+  const fallbackHeadId = getObjectId(department.headId);
+  if (headIds.length === 0 && fallbackHeadId) {
+    headIds.push(fallbackHeadId);
+  }
+
+  return Array.from(new Set(headIds)).slice(0, 2);
 }
 
 function escapeRegex(value: string): string {

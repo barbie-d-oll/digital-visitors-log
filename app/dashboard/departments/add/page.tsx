@@ -11,18 +11,18 @@ import {
   DashboardPanel,
   FormField,
   PageHeader,
-  SelectField,
   fieldControlClassName,
 } from "../../../_components/dashboard/DashboardPrimitives";
 import { Button } from "@/components/ui/button";
 
 type StaffMember = { _id: string; name: string };
+const MAX_DEPARTMENT_HEADS = 2;
 
 export default function AddDepartmentPage() {
   const router = useRouter();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [headId, setHeadId] = useState("");
+  const [headIds, setHeadIds] = useState<string[]>([]);
   const [staffList, setStaffList] = useState<StaffMember[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -46,7 +46,7 @@ export default function AddDepartmentPage() {
         body: JSON.stringify({
           name,
           description,
-          headId: headId || undefined,
+          headIds,
         }),
       });
 
@@ -68,6 +68,20 @@ export default function AddDepartmentPage() {
     } finally {
       setSaving(false);
     }
+  };
+
+  const toggleDepartmentHead = (staffId: string) => {
+    setHeadIds((current) => {
+      if (current.includes(staffId)) {
+        return current.filter((id) => id !== staffId);
+      }
+
+      if (current.length >= MAX_DEPARTMENT_HEADS) {
+        return current;
+      }
+
+      return [...current, staffId];
+    });
   };
 
   return (
@@ -108,23 +122,42 @@ export default function AddDepartmentPage() {
             />
           </FormField>
 
-         {staffList.length > 0 && (
-           <FormField label="Department Head" htmlFor="dept-head" helper="This person will be notified when visitors arrive for anyone in this department.">
-            <SelectField
-              id="dept-head"
-              value={headId}
-              onChange={(e) => setHeadId(e.target.value)}
+          {staffList.length > 0 && (
+            <FormField
+              label="Department Heads"
+              helper="Select up to 2 people."
             >
-              <option value="">No head assigned</option>
-              {staffList.map((s) => (
-                <option key={s._id} value={s._id}>{s.name}</option>
-              ))}
-            </SelectField>
-          </FormField>
+              <div className="grid gap-2">
+                {staffList.map((staff) => {
+                  const checked = headIds.includes(staff._id);
+                  const disabled =
+                    !checked && headIds.length >= MAX_DEPARTMENT_HEADS;
 
-         )
-
-         }
+                  return (
+                    <label
+                      key={staff._id}
+                      className={`flex min-h-11 items-center gap-3 rounded-lg border border-input bg-background px-3 text-sm transition ${
+                        disabled
+                          ? "cursor-not-allowed opacity-50"
+                          : "cursor-pointer hover:border-ring"
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        className="size-4 rounded border-input accent-primary"
+                        checked={checked}
+                        disabled={disabled}
+                        onChange={() => toggleDepartmentHead(staff._id)}
+                      />
+                      <span className="font-medium text-foreground">
+                        {staff.name}
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
+            </FormField>
+          )}
           {error && <p className="text-sm text-destructive">{error}</p>}
 
           <div className="flex justify-end gap-3 border-t border-border pt-5">

@@ -4,10 +4,57 @@ import mongoose from "mongoose";
 import { connectToDB } from "@/lib/db/mongoose";
 import { getAuthUser } from "@/lib/auth/jwt";
 import Department from "@/lib/models/department.model";
+import Staff from "@/lib/models/staff.model";
 import { getErrorMessage } from "@/lib/utils";
+
+const MAX_DEPARTMENT_HEADS = 2;
 
 function escapeRegex(value: string) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function getRequestedHeadIds(body: Record<string, unknown>) {
+  const rawHeadIds = Array.isArray(body.headIds)
+    ? body.headIds
+    : typeof body.headId === "string"
+      ? [body.headId]
+      : [];
+
+  return Array.from(
+    new Set(
+      rawHeadIds
+        .filter((headId): headId is string => typeof headId === "string")
+        .map((headId) => headId.trim())
+        .filter(Boolean),
+    ),
+  );
+}
+
+async function validateDepartmentHeadIds(
+  headIds: string[],
+  organizationId: string,
+) {
+  if (headIds.length > MAX_DEPARTMENT_HEADS) {
+    return "Please choose no more than 2 department heads.";
+  }
+
+  if (headIds.some((headId) => !headId || !mongoose.isValidObjectId(headId))) {
+    return "Please choose valid department heads.";
+  }
+
+  if (headIds.length === 0) {
+    return null;
+  }
+
+  const staffCount = await Staff.countDocuments({
+    _id: { $in: headIds },
+    organizationId,
+    status: "active",
+  });
+
+  return staffCount === headIds.length
+    ? null
+    : "Please choose active staff members from your organization.";
 }
 
 export async function GET(
@@ -34,6 +81,7 @@ export async function GET(
       _id: id,
       organizationId: authUser.organizationId,
     })
+      .populate("headIds", "name email phone")
       .populate("headId", "name email phone")
       .lean();
 
@@ -74,11 +122,11 @@ export async function PATCH(
       );
     }
 
-    const body = await request.json();
+    const body = (await request.json()) as Record<string, unknown>;
     const name = typeof body.name === "string" ? body.name.trim() : "";
     const description =
       typeof body.description === "string" ? body.description.trim() : "";
-    const headId = typeof body.headId === "string" ? body.headId.trim() : "";
+    const headIds = getRequestedHeadIds(body);
     const status = body.status === "inactive" ? "inactive" : "active";
 
     if (!name) {
@@ -88,9 +136,14 @@ export async function PATCH(
       );
     }
 
-    if (headId && !mongoose.isValidObjectId(headId)) {
+    const headValidationError = await validateDepartmentHeadIds(
+      headIds,
+      authUser.organizationId,
+    );
+
+    if (headValidationError) {
       return NextResponse.json(
-        { error: "Please choose a valid department head." },
+        { error: headValidationError },
         { status: 400 }
       );
     }
@@ -119,8 +172,10 @@ export async function PATCH(
       },
     };
 
-    if (headId) {
-      update.$set.headId = headId;
+    update.$set.headIds = headIds;
+
+    if (headIds.length > 0) {
+      update.$set.headId = headIds[0];
     } else {
       update.$unset = { headId: "" };
     }
@@ -130,6 +185,7 @@ export async function PATCH(
       update,
       { returnDocument: "after", runValidators: true }
     )
+      .populate("headIds", "name email phone")
       .populate("headId", "name email phone")
       .lean();
 

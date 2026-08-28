@@ -19,6 +19,7 @@ export type UserProfile = {
   organizationId: string;
   organizationName: string;
   organizationSlug?: string;
+  organizationLogoUrl?: string;
   plan?: string;
 };
 
@@ -60,7 +61,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    fetchUser();
+    const timeoutId = window.setTimeout(() => {
+      fetchUser();
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
   }, [fetchUser]);
 
   const login = async (email: string, password: string) => {

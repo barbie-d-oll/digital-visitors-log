@@ -1,9 +1,61 @@
 import { NextRequest, NextResponse } from "next/server";
+import mongoose from "mongoose";
 
 import { connectToDB } from "@/lib/db/mongoose";
 import { getAuthUser } from "@/lib/auth/jwt";
 import Department from "@/lib/models/department.model";
+import Staff from "@/lib/models/staff.model";
 import { getErrorMessage } from "@/lib/utils";
+
+const MAX_DEPARTMENT_HEADS = 2;
+
+function escapeRegex(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function getRequestedHeadIds(body: Record<string, unknown>) {
+  const rawHeadIds = Array.isArray(body.headIds)
+    ? body.headIds
+    : typeof body.headId === "string"
+      ? [body.headId]
+      : [];
+
+  return Array.from(
+    new Set(
+      rawHeadIds
+        .filter((headId): headId is string => typeof headId === "string")
+        .map((headId) => headId.trim())
+        .filter(Boolean),
+    ),
+  );
+}
+
+async function validateDepartmentHeadIds(
+  headIds: string[],
+  organizationId: string,
+) {
+  if (headIds.length > MAX_DEPARTMENT_HEADS) {
+    return "Please choose no more than 2 department heads.";
+  }
+
+  if (headIds.some((headId) => !headId || !mongoose.isValidObjectId(headId))) {
+    return "Please choose valid department heads.";
+  }
+
+  if (headIds.length === 0) {
+    return null;
+  }
+
+  const staffCount = await Staff.countDocuments({
+    _id: { $in: headIds },
+    organizationId,
+    status: "active",
+  });
+
+  return staffCount === headIds.length
+    ? null
+    : "Please choose active staff members from your organization.";
+}
 
 export async function GET() {
   try {
@@ -17,6 +69,7 @@ export async function GET() {
     const departments = await Department.find({
       organizationId: authUser.organizationId,
     })
+      .populate("headIds", "name email phone")
       .populate("headId", "name email phone")
       .sort({ name: 1 })
       .lean();
@@ -40,10 +93,13 @@ export async function POST(request: NextRequest) {
 
     await connectToDB();
 
-    const body = await request.json();
-    const { name, description, headId } = body;
+    const body = (await request.json()) as Record<string, unknown>;
+    const name = typeof body.name === "string" ? body.name.trim() : "";
+    const description =
+      typeof body.description === "string" ? body.description.trim() : "";
+    const headIds = getRequestedHeadIds(body);
 
-    if (!name?.trim()) {
+    if (!name) {
       return NextResponse.json(
         { error: "Department name is required." },
         { status: 400 }
@@ -52,7 +108,7 @@ export async function POST(request: NextRequest) {
 
     // Check for duplicate within org
     const existing = await Department.findOne({
-      name: { $regex: `^${name.trim()}$`, $options: "i" },
+      name: { $regex: `^${escapeRegex(name)}$`, $options: "i" },
       organizationId: authUser.organizationId,
     });
 
@@ -63,10 +119,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const headValidationError = await validateDepartmentHeadIds(
+      headIds,
+      authUser.organizationId,
+    );
+
+    if (headValidationError) {
+      return NextResponse.json(
+        { error: headValidationError },
+        { status: 400 }
+      );
+    }
+
     const department = await Department.create({
-      name: name.trim(),
-      description: description?.trim() || "",
-      headId: headId || undefined,
+      name,
+      description,
+      headId: headIds[0] || undefined,
+      headIds,
       organizationId: authUser.organizationId,
     });
 

@@ -4,6 +4,7 @@ export interface IDepartment extends Document {
   name: string;
   description?: string;
   headId?: mongoose.Types.ObjectId;
+  headIds: mongoose.Types.ObjectId[];
   organizationId: mongoose.Types.ObjectId;
   status: "active" | "inactive";
   createdAt: Date;
@@ -15,6 +16,7 @@ const DepartmentSchema = new Schema<IDepartment>(
     name: { type: String, required: true, trim: true },
     description: { type: String, trim: true },
     headId: { type: Schema.Types.ObjectId, ref: "Staff" },
+    headIds: [{ type: Schema.Types.ObjectId, ref: "Staff" }],
     organizationId: {
       type: Schema.Types.ObjectId,
       ref: "Organization",

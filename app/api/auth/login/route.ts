@@ -84,6 +84,10 @@ export async function POST(request: Request) {
         role: user.role,
         organizationId: organization._id,
         organizationName: organization.name,
+        organizationSlug: organization.slug,
+        organizationLogoUrl:
+          organization.logo || organization.settings?.logoUrl || "",
+        plan: organization.plan,
         avatar: user.avatar,
       },
     });

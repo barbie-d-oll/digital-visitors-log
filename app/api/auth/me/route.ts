@@ -39,6 +39,8 @@ export async function GET() {
         organizationId: user.organizationId,
         organizationName: organization?.name ?? "",
         organizationSlug: organization?.slug ?? "",
+        organizationLogoUrl:
+          organization?.logo || organization?.settings?.logoUrl || "",
         plan: organization?.plan ?? "free",
       },
     });

@@ -23,12 +23,19 @@ type StaffMember = {
   name: string;
 };
 
+type DepartmentHead = {
+  _id: string;
+  name: string;
+  email?: string;
+};
+
 type Department = {
   _id: string;
   name: string;
   description?: string;
   status?: "active" | "inactive";
-  headId?: { _id: string; name: string; email?: string } | string | null;
+  headId?: DepartmentHead | string | null;
+  headIds?: Array<DepartmentHead | string> | null;
 };
 
 type ProfileData = {
@@ -38,12 +45,24 @@ type ProfileData = {
   staff: StaffMember[];
 };
 
-const getHeadId = (department: Department) => {
-  if (typeof department.headId === "object" && department.headId) {
-    return department.headId._id;
+const MAX_DEPARTMENT_HEADS = 2;
+
+const getHeadIds = (department: Department) => {
+  const headIds = Array.isArray(department.headIds)
+    ? department.headIds
+        .map((head) => (typeof head === "object" && head ? head._id : head))
+        .filter(Boolean)
+    : [];
+
+  if (headIds.length > 0) {
+    return Array.from(new Set(headIds)).slice(0, MAX_DEPARTMENT_HEADS);
   }
 
-  return department.headId || "";
+  if (typeof department.headId === "object" && department.headId) {
+    return [department.headId._id];
+  }
+
+  return department.headId ? [department.headId] : [];
 };
 
 export default function EditDepartmentPage() {
@@ -52,7 +71,7 @@ export default function EditDepartmentPage() {
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [headId, setHeadId] = useState("");
+  const [headIds, setHeadIds] = useState<string[]>([]);
   const [status, setStatus] = useState<"active" | "inactive">("active");
   const [staffList, setStaffList] = useState<StaffMember[]>([]);
   const [loading, setLoading] = useState(true);
@@ -104,7 +123,7 @@ export default function EditDepartmentPage() {
         if (data.department) {
           setName(data.department.name || "");
           setDescription(data.department.description || "");
-          setHeadId(getHeadId(data.department));
+          setHeadIds(getHeadIds(data.department));
           setStatus(data.department.status === "inactive" ? "inactive" : "active");
         }
       })
@@ -134,7 +153,7 @@ export default function EditDepartmentPage() {
         body: JSON.stringify({
           name,
           description,
-          headId,
+          headIds,
           status,
         }),
       });
@@ -151,7 +170,7 @@ export default function EditDepartmentPage() {
       const department = data.department as Department;
       setName(department.name || "");
       setDescription(department.description || "");
-      setHeadId(getHeadId(department));
+      setHeadIds(getHeadIds(department));
       setStatus(department.status === "inactive" ? "inactive" : "active");
       const message = "Department profile updated successfully.";
       setSuccess(message);
@@ -164,6 +183,20 @@ export default function EditDepartmentPage() {
     } finally {
       setSaving(false);
     }
+  };
+
+  const toggleDepartmentHead = (staffId: string) => {
+    setHeadIds((current) => {
+      if (current.includes(staffId)) {
+        return current.filter((id) => id !== staffId);
+      }
+
+      if (current.length >= MAX_DEPARTMENT_HEADS) {
+        return current;
+      }
+
+      return [...current, staffId];
+    });
   };
 
   return (
@@ -218,22 +251,38 @@ export default function EditDepartmentPage() {
 
             {staffList.length > 0 && (
               <FormField
-                label="Department Head"
-                htmlFor="dept-head"
-                helper="This person will be notified when visitors arrive for anyone in this department."
+                label="Department Heads"
+                helper="Select up to 2 people."
               >
-                <SelectField
-                  id="dept-head"
-                  value={headId}
-                  onChange={(event) => setHeadId(event.target.value)}
-                >
-                  <option value="">No head assigned</option>
-                  {staffList.map((member) => (
-                    <option key={member._id} value={member._id}>
-                      {member.name}
-                    </option>
-                  ))}
-                </SelectField>
+                <div className="grid gap-2">
+                  {staffList.map((member) => {
+                    const checked = headIds.includes(member._id);
+                    const disabled =
+                      !checked && headIds.length >= MAX_DEPARTMENT_HEADS;
+
+                    return (
+                      <label
+                        key={member._id}
+                        className={`flex min-h-11 items-center gap-3 rounded-lg border border-input bg-background px-3 text-sm transition ${
+                          disabled
+                            ? "cursor-not-allowed opacity-50"
+                            : "cursor-pointer hover:border-ring"
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          className="size-4 rounded border-input accent-primary"
+                          checked={checked}
+                          disabled={disabled}
+                          onChange={() => toggleDepartmentHead(member._id)}
+                        />
+                        <span className="font-medium text-foreground">
+                          {member.name}
+                        </span>
+                      </label>
+                    );
+                  })}
+                </div>
               </FormField>
             )}
 

@@ -1,7 +1,11 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
-import { Loader2, Save } from "lucide-react";
+/* eslint-disable @next/next/no-img-element -- Organization logos can point to arbitrary external domains. */
+
+import type { ChangeEvent, FormEvent } from "react";
+import { useEffect, useState } from "react";
+import { ImageIcon, Loader2, Save, Upload } from "lucide-react";
+import { toast } from "sonner";
 
 import {
   DashboardPanel,
@@ -16,6 +20,7 @@ interface OrgSettings {
   name: string;
   phone: string;
   address: string;
+  logo: string;
   settings: {
     smsEnabled: boolean;
     smsSenderId: string;
@@ -36,12 +41,14 @@ interface OrgSettings {
 }
 
 export default function SettingsPage() {
-  const { user } = useAuth();
+  const { user, refresh } = useAuth();
   const [org, setOrg] = useState<OrgSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
+  const isOwner = user?.role === "owner";
 
   useEffect(() => {
     fetch("/api/organization")
@@ -52,6 +59,7 @@ export default function SettingsPage() {
             name: data.organization.name || "",
             phone: data.organization.phone || "",
             address: data.organization.address || "",
+            logo: data.organization.logo || data.organization.settings?.logoUrl || "",
             settings: {
               smsEnabled: data.organization.settings?.smsEnabled || false,
               smsSenderId: data.organization.settings?.smsSenderId || "",
@@ -64,7 +72,7 @@ export default function SettingsPage() {
               ndaText: data.organization.settings?.ndaText || "",
               customBranding: data.organization.settings?.customBranding || false,
               primaryColor: data.organization.settings?.primaryColor || "#1b6b61",
-              logoUrl: data.organization.settings?.logoUrl || "",
+              logoUrl: data.organization.logo || data.organization.settings?.logoUrl || "",
               visitPurposes: data.organization.settings?.visitPurposes || ["Meeting", "Delivery", "Interview", "Event", "Other"],
               requireCompany: data.organization.settings?.requireCompany || false,
               autoCheckoutHours: data.organization.settings?.autoCheckoutHours || null,
@@ -85,6 +93,12 @@ export default function SettingsPage() {
     setSuccess("");
 
     try {
+      const logo = org.logo.trim();
+      const settings = {
+        ...org.settings,
+        logoUrl: logo,
+      };
+
       const res = await fetch("/api/organization", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -92,19 +106,28 @@ export default function SettingsPage() {
           name: org.name,
           phone: org.phone,
           address: org.address,
-          settings: org.settings,
+          logo,
+          settings,
         }),
       });
+      const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
-        const data = await res.json();
-        setError(data.error || "Failed to save settings.");
+        const message = data.error || "Failed to save settings.";
+        setError(message);
+        toast.error(message);
         return;
       }
 
-      setSuccess("Settings saved successfully.");
+      setOrg((current) => current ? { ...current, logo, settings } : current);
+      await refresh();
+      const message = "Settings saved successfully.";
+      setSuccess(message);
+      toast.success(message);
     } catch {
-      setError("Something went wrong.");
+      const message = "Something went wrong.";
+      setError(message);
+      toast.error(message);
     } finally {
       setSaving(false);
     }
@@ -119,6 +142,58 @@ export default function SettingsPage() {
     );
   };
 
+  const updateLogo = (value: string) => {
+    setOrg((prev) =>
+      prev
+        ? {
+            ...prev,
+            logo: value,
+            settings: { ...prev.settings, logoUrl: value },
+          }
+        : prev,
+    );
+  };
+
+  const handleLogoUpload = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setUploadingLogo(true);
+    setError("");
+    setSuccess("");
+
+    try {
+      const formData = new FormData();
+      formData.append("logo", file);
+
+      const res = await fetch("/api/organization/logo", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok || typeof data.logoUrl !== "string") {
+        const message = data.error || "Failed to upload logo.";
+        setError(message);
+        toast.error(message);
+        return;
+      }
+
+      updateLogo(data.logoUrl);
+      await refresh();
+      const message = "Logo uploaded successfully.";
+      setSuccess(message);
+      toast.success(message);
+    } catch {
+      const message = "Failed to upload logo.";
+      setError(message);
+      toast.error(message);
+    } finally {
+      setUploadingLogo(false);
+      event.target.value = "";
+    }
+  };
+
   if (loading || !org) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -127,7 +202,7 @@ export default function SettingsPage() {
     );
   }
 
-  const isOwner = user?.role === "owner";
+  const logoPreview = org.logo || org.settings.logoUrl;
 
   return (
     <div className="space-y-8">
@@ -148,6 +223,52 @@ export default function SettingsPage() {
             </FormField>
             <FormField label="Address" htmlFor="s-address" className="md:col-span-2">
               <input id="s-address" className={fieldControlClassName} value={org.address} onChange={(e) => setOrg({ ...org, address: e.target.value })} disabled={!isOwner} />
+            </FormField>
+            <FormField label="Logo" htmlFor="s-logo" className="md:col-span-2">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                <div className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border bg-muted text-muted-foreground">
+                  {logoPreview ? (
+                    <img
+                      src={logoPreview}
+                      alt={`${org.name || "Organization"} logo`}
+                      className="size-full object-cover"
+                    />
+                  ) : (
+                    <ImageIcon className="size-6" />
+                  )}
+                </div>
+                <div className="grid min-w-0 flex-1 gap-3 md:grid-cols-[minmax(0,1fr)_auto]">
+                  <input
+                    id="s-logo"
+                    className={fieldControlClassName}
+                    value={org.logo}
+                    onChange={(e) => updateLogo(e.target.value)}
+                    placeholder="https://..."
+                    disabled={!isOwner}
+                  />
+                  <label
+                    className={`inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-input px-4 text-sm font-semibold transition ${
+                      isOwner && !uploadingLogo
+                        ? "cursor-pointer bg-card hover:border-ring hover:bg-accent"
+                        : "cursor-not-allowed opacity-60"
+                    }`}
+                  >
+                    {uploadingLogo ? (
+                      <Loader2 className="size-4 animate-spin" />
+                    ) : (
+                      <Upload className="size-4" />
+                    )}
+                    {uploadingLogo ? "Uploading..." : "Upload"}
+                    <input
+                      type="file"
+                      className="sr-only"
+                      accept="image/png,image/jpeg,image/webp,image/gif"
+                      onChange={handleLogoUpload}
+                      disabled={!isOwner || uploadingLogo}
+                    />
+                  </label>
+                </div>
+              </div>
             </FormField>
           </div>
         </DashboardPanel>
@@ -241,9 +362,6 @@ export default function SettingsPage() {
                     <input id="s-color" type="color" className="size-10 rounded cursor-pointer border border-input" value={org.settings.primaryColor} onChange={(e) => updateSetting("primaryColor", e.target.value)} />
                     <input className={fieldControlClassName} value={org.settings.primaryColor} onChange={(e) => updateSetting("primaryColor", e.target.value)} placeholder="#1b6b61" />
                   </div>
-                </FormField>
-                <FormField label="Logo URL" htmlFor="s-logo">
-                  <input id="s-logo" className={fieldControlClassName} value={org.settings.logoUrl} onChange={(e) => updateSetting("logoUrl", e.target.value)} placeholder="https://..." />
                 </FormField>
               </div>
             )}

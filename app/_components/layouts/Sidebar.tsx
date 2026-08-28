@@ -1,5 +1,7 @@
 "use client";
 
+/* eslint-disable @next/next/no-img-element -- Organization logos can point to arbitrary external domains. */
+
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -19,6 +21,7 @@ import {
   MapPin,
   ScrollText,
   AlertTriangle,
+  Building2,
   ScanLine,
 } from "lucide-react";
 
@@ -160,17 +163,30 @@ function SidebarContent({
         <Link
           href="/dashboard"
           onClick={() => setSidebarOpen(false)}
-          className="min-w-0 flex-1 rounded-lg focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/30"
+          className={cn(
+            "flex min-w-0 flex-1 items-center gap-3 rounded-lg focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/30",
+            compact && "justify-center",
+          )}
         >
-          <div className="hidden min-w-0 sm:block">
-              <p className="truncate text-sm font-semibold text-foreground">
-                {user?.name || "User"}
-              </p>
-              <p className="truncate text-sm text-muted-foreground">
-                {user?.organizationName || "Organization"}
-              </p>
-            </div>
-           
+          <span className="flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-sidebar-border bg-sidebar-accent text-sidebar-accent-foreground">
+            {user?.organizationLogoUrl ? (
+              <img
+                src={user.organizationLogoUrl}
+                alt={`${user.organizationName || "Organization"} logo`}
+                className="size-full object-cover"
+              />
+            ) : (
+              <Building2 className="size-5" />
+            )}
+          </span>
+          <div className={cn("min-w-0", compact && "hidden")}>
+            <p className="truncate text-sm font-semibold text-foreground">
+              {user?.name || "User"}
+            </p>
+            <p className="truncate text-sm text-muted-foreground">
+              {user?.organizationName || "Organization"}
+            </p>
+          </div>
         </Link>
 
         {mode === "desktop" ? (

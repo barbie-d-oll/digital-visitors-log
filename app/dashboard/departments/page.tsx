@@ -52,6 +52,25 @@ interface Department {
   description?: string;
   status: string;
   headId?: { _id: string; name: string; email: string } | null;
+  headIds?: Array<{ _id: string; name: string; email: string } | string> | null;
+}
+
+function getDepartmentHeadNames(department: Department) {
+  const names = Array.isArray(department.headIds)
+    ? department.headIds
+        .filter((head): head is { _id: string; name: string; email: string } =>
+          Boolean(head) && typeof head === "object" && "name" in head,
+        )
+        .map((head) => head.name)
+    : [];
+
+  if (names.length > 0) {
+    return names.join(", ");
+  }
+
+  return department.headId && typeof department.headId === "object"
+    ? department.headId.name
+    : "-";
 }
 
 export default function DepartmentsPage() {
@@ -188,7 +207,7 @@ export default function DepartmentsPage() {
                     <TableCell className="px-5 font-medium">{dept.name}</TableCell>
                     <TableCell className="text-muted-foreground">{dept.description || "-"}</TableCell>
                     <TableCell>
-                      {dept.headId && typeof dept.headId === "object" ? dept.headId.name : "-"}
+                      {getDepartmentHeadNames(dept)}
                     </TableCell>
                     <TableCell><StatusBadge status={dept.status} /></TableCell>
                     <TableCell className="pr-5 text-right">
