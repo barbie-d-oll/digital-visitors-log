@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import type { FormEvent } from "react";
 import { useCallback, useEffect, useState } from "react";
 import { ArrowLeft, Loader2, Save, Users } from "lucide-react";
+import { toast } from "sonner";
 
 import {
   DashboardPanel,
@@ -149,7 +150,9 @@ export default function EditStaffPage() {
       const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
-        setError(data.error || "Failed to update staff profile.");
+        const message = data.error || "Failed to update staff profile.";
+        setError(message);
+        toast.error(message);
         return;
       }
 
@@ -160,10 +163,14 @@ export default function EditStaffPage() {
       setDepartmentId(getDepartmentId(member));
       setPosition(member.position || "");
       setStatus(member.status === "inactive" ? "inactive" : "active");
-      setSuccess("Staff profile updated successfully.");
+      const message = "Staff profile updated successfully.";
+      setSuccess(message);
+      toast.success(message);
     } catch (err) {
       console.error(err);
-      setError("Failed to update staff profile.");
+      const message = "Failed to update staff profile.";
+      setError(message);
+      toast.error(message);
     } finally {
       setSaving(false);
     }
@@ -236,20 +243,22 @@ export default function EditStaffPage() {
                 />
               </FormField>
 
-              <FormField label="Department" htmlFor="staff-department">
-                <SelectField
-                  id="staff-department"
-                  value={departmentId}
-                  onChange={(event) => setDepartmentId(event.target.value)}
-                >
-                  <option value="">No department</option>
-                  {departments.map((dept) => (
-                    <option key={dept._id} value={dept._id}>
-                      {dept.name}
-                    </option>
-                  ))}
-                </SelectField>
-              </FormField>
+              {departments.length > 0 && (
+                <FormField label="Department" htmlFor="staff-department">
+                  <SelectField
+                    id="staff-department"
+                    value={departmentId}
+                    onChange={(event) => setDepartmentId(event.target.value)}
+                  >
+                    <option value="">No department</option>
+                    {departments.map((dept) => (
+                      <option key={dept._id} value={dept._id}>
+                        {dept.name}
+                      </option>
+                    ))}
+                  </SelectField>
+                </FormField>
+              )}
 
               <FormField label="Position" htmlFor="staff-position">
                 <input

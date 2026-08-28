@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { connectToDB } from "@/lib/db/mongoose";
 import { getAuthUser } from "@/lib/auth/jwt";
 import Staff from "@/lib/models/staff.model";
+import { getErrorMessage } from "@/lib/utils";
 
 export async function GET(request: NextRequest) {
   try {
@@ -94,7 +95,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Create staff error:", error);
     return NextResponse.json(
-      { error: "Failed to create staff member." },
+      { error: getErrorMessage(error, "Failed to create staff member.") },
       { status: 500 }
     );
   }

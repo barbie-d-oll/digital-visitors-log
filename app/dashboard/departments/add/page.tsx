@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { ArrowLeft, Layers, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 import {
   DashboardPanel,
@@ -52,13 +53,18 @@ export default function AddDepartmentPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error || "Failed to create department.");
+        const message = data.error || "Failed to create department.";
+        setError(message);
+        toast.error(message);
         return;
       }
 
+      toast.success("Department added successfully.");
       router.push("/dashboard/departments");
     } catch {
-      setError("Something went wrong.");
+      const message = "Something went wrong.";
+      setError(message);
+      toast.error(message);
     } finally {
       setSaving(false);
     }
@@ -102,7 +108,8 @@ export default function AddDepartmentPage() {
             />
           </FormField>
 
-          <FormField label="Department Head" htmlFor="dept-head" helper="This person will be notified when visitors arrive for anyone in this department.">
+         {staffList.length > 0 && (
+           <FormField label="Department Head" htmlFor="dept-head" helper="This person will be notified when visitors arrive for anyone in this department.">
             <SelectField
               id="dept-head"
               value={headId}
@@ -115,6 +122,9 @@ export default function AddDepartmentPage() {
             </SelectField>
           </FormField>
 
+         )
+
+         }
           {error && <p className="text-sm text-destructive">{error}</p>}
 
           <div className="flex justify-end gap-3 border-t border-border pt-5">

@@ -11,6 +11,7 @@ import {
   Trash2,
   Users,
 } from "lucide-react";
+import { toast } from "sonner";
 
 import {
   DashboardPanel,
@@ -135,7 +136,9 @@ export default function StaffPage() {
       const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
-        setDeleteError(data.error || "Failed to delete staff member.");
+        const message = data.error || "Failed to delete staff member.";
+        setDeleteError(message);
+        toast.error(message);
         return;
       }
 
@@ -143,9 +146,12 @@ export default function StaffPage() {
         current.filter((member) => member._id !== staffToDelete._id),
       );
       setStaffToDelete(null);
+      toast.success("Staff member deleted successfully.");
     } catch (error) {
       console.error(error);
-      setDeleteError("Failed to delete staff member.");
+      const message = "Failed to delete staff member.";
+      setDeleteError(message);
+      toast.error(message);
     } finally {
       setDeleting(false);
     }

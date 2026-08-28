@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import type { FormEvent } from "react";
 import { useCallback, useEffect, useState } from "react";
 import { ArrowLeft, Layers, Loader2, Save } from "lucide-react";
+import { toast } from "sonner";
 
 import {
   DashboardPanel,
@@ -141,7 +142,9 @@ export default function EditDepartmentPage() {
       const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
-        setError(data.error || "Failed to update department profile.");
+        const message = data.error || "Failed to update department profile.";
+        setError(message);
+        toast.error(message);
         return;
       }
 
@@ -150,10 +153,14 @@ export default function EditDepartmentPage() {
       setDescription(department.description || "");
       setHeadId(getHeadId(department));
       setStatus(department.status === "inactive" ? "inactive" : "active");
-      setSuccess("Department profile updated successfully.");
+      const message = "Department profile updated successfully.";
+      setSuccess(message);
+      toast.success(message);
     } catch (err) {
       console.error(err);
-      setError("Failed to update department profile.");
+      const message = "Failed to update department profile.";
+      setError(message);
+      toast.error(message);
     } finally {
       setSaving(false);
     }
@@ -209,24 +216,26 @@ export default function EditDepartmentPage() {
               />
             </FormField>
 
-            <FormField
-              label="Department Head"
-              htmlFor="dept-head"
-              helper="This person will be notified when visitors arrive for anyone in this department."
-            >
-              <SelectField
-                id="dept-head"
-                value={headId}
-                onChange={(event) => setHeadId(event.target.value)}
+            {staffList.length > 0 && (
+              <FormField
+                label="Department Head"
+                htmlFor="dept-head"
+                helper="This person will be notified when visitors arrive for anyone in this department."
               >
-                <option value="">No head assigned</option>
-                {staffList.map((member) => (
-                  <option key={member._id} value={member._id}>
-                    {member.name}
-                  </option>
-                ))}
-              </SelectField>
-            </FormField>
+                <SelectField
+                  id="dept-head"
+                  value={headId}
+                  onChange={(event) => setHeadId(event.target.value)}
+                >
+                  <option value="">No head assigned</option>
+                  {staffList.map((member) => (
+                    <option key={member._id} value={member._id}>
+                      {member.name}
+                    </option>
+                  ))}
+                </SelectField>
+              </FormField>
+            )}
 
             <FormField label="Status" htmlFor="dept-status">
               <SelectField

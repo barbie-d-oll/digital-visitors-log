@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { connectToDB } from "@/lib/db/mongoose";
 import { getAuthUser } from "@/lib/auth/jwt";
 import Department from "@/lib/models/department.model";
+import { getErrorMessage } from "@/lib/utils";
 
 export async function GET() {
   try {
@@ -73,7 +74,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Create department error:", error);
     return NextResponse.json(
-      { error: "Failed to create department." },
+      { error: getErrorMessage(error, "Failed to create department.") },
       { status: 500 }
     );
   }

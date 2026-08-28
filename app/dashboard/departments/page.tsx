@@ -11,6 +11,7 @@ import {
   Trash2,
 } from "lucide-react";
 import Link from "next/link";
+import { toast } from "sonner";
 
 import {
   DashboardPanel,
@@ -118,7 +119,9 @@ export default function DepartmentsPage() {
       const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
-        setDeleteError(data.error || "Failed to delete department.");
+        const message = data.error || "Failed to delete department.";
+        setDeleteError(message);
+        toast.error(message);
         return;
       }
 
@@ -126,9 +129,12 @@ export default function DepartmentsPage() {
         current.filter((dept) => dept._id !== departmentToDelete._id),
       );
       setDepartmentToDelete(null);
+      toast.success("Department deleted successfully.");
     } catch (err) {
       console.error(err);
-      setDeleteError("Failed to delete department.");
+      const message = "Failed to delete department.";
+      setDeleteError(message);
+      toast.error(message);
     } finally {
       setDeleting(false);
     }

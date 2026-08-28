@@ -4,6 +4,7 @@ import mongoose from "mongoose";
 import { connectToDB } from "@/lib/db/mongoose";
 import { getAuthUser } from "@/lib/auth/jwt";
 import Staff from "@/lib/models/staff.model";
+import { getErrorMessage } from "@/lib/utils";
 
 export async function GET(
   _request: NextRequest,
@@ -132,7 +133,7 @@ export async function PATCH(
   } catch (error) {
     console.error("Update staff error:", error);
     return NextResponse.json(
-      { error: "Failed to update staff member." },
+      { error: getErrorMessage(error, "Failed to update staff member.") },
       { status: 500 }
     );
   }
@@ -168,7 +169,7 @@ export async function DELETE(
   } catch (error) {
     console.error("Delete staff error:", error);
     return NextResponse.json(
-      { error: "Failed to delete staff member." },
+      { error: getErrorMessage(error, "Failed to delete staff member.") },
       { status: 500 }
     );
   }

@@ -4,6 +4,7 @@ import mongoose from "mongoose";
 import { connectToDB } from "@/lib/db/mongoose";
 import { getAuthUser } from "@/lib/auth/jwt";
 import Department from "@/lib/models/department.model";
+import { getErrorMessage } from "@/lib/utils";
 
 function escapeRegex(value: string) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -143,7 +144,7 @@ export async function PATCH(
   } catch (error) {
     console.error("Update department error:", error);
     return NextResponse.json(
-      { error: "Failed to update department." },
+      { error: getErrorMessage(error, "Failed to update department.") },
       { status: 500 }
     );
   }
@@ -185,7 +186,7 @@ export async function DELETE(
   } catch (error) {
     console.error("Delete department error:", error);
     return NextResponse.json(
-      { error: "Failed to delete department." },
+      { error: getErrorMessage(error, "Failed to delete department.") },
       { status: 500 }
     );
   }

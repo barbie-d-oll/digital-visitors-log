@@ -3,6 +3,7 @@
 import type { FormEvent } from "react";
 import { useEffect, useState } from "react";
 import { Loader2, UserPlus } from "lucide-react";
+import { toast } from "sonner";
 
 import {
   DashboardPanel,
@@ -54,10 +55,13 @@ export default function AddStaffPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error || "Failed to save staff.");
+        const message = data.error || "Failed to save staff.";
+        setError(message);
+        toast.error(message);
         return;
       }
 
+      toast.success("Staff added successfully!");
       setSuccess("Staff added successfully!");
       setName("");
       setEmail("");
@@ -66,7 +70,9 @@ export default function AddStaffPage() {
       setPosition("");
     } catch (err) {
       console.error(err);
-      setError("Failed to save staff.");
+      const message = "Failed to save staff.";
+      setError(message);
+      toast.error(message);
     } finally {
       setSaving(false);
     }
@@ -117,20 +123,22 @@ export default function AddStaffPage() {
               />
             </FormField>
 
-            <FormField label="Department" htmlFor="staff-department">
-              <SelectField
-                id="staff-department"
-                value={departmentId}
-                onChange={(e) => setDepartmentId(e.target.value)}
-              >
-                <option value="">No department</option>
-                {departments.map((dept) => (
-                  <option key={dept._id} value={dept._id}>
-                    {dept.name}
-                  </option>
-                ))}
-              </SelectField>
-            </FormField>
+            {departments.length > 0 && (
+              <FormField label="Department" htmlFor="staff-department">
+                <SelectField
+                  id="staff-department"
+                  value={departmentId}
+                  onChange={(e) => setDepartmentId(e.target.value)}
+                >
+                  <option value="">No department</option>
+                  {departments.map((dept) => (
+                    <option key={dept._id} value={dept._id}>
+                      {dept.name}
+                    </option>
+                  ))}
+                </SelectField>
+              </FormField>
+            )}
 
             <FormField label="Position" htmlFor="staff-position">
               <input
