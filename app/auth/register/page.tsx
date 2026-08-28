@@ -12,8 +12,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-
-import { ModeToggle } from "@/components/common/Toggle";
+import { toast } from "sonner";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -41,13 +40,18 @@ export default function RegisterPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        setErrorMessage(data.error || "Registration failed.");
+        const message = data.error || "Registration failed.";
+        setErrorMessage(message);
+        toast.error(message);
         return;
       }
 
-      router.replace("/onboarding");
+      toast.success("Registration successful. Please log in to continue.");
+      router.replace("/auth/login");
     } catch {
-      setErrorMessage("Something went wrong. Please try again.");
+      const message = "Something went wrong. Please try again.";
+      setErrorMessage(message);
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }
@@ -64,12 +68,12 @@ export default function RegisterPage() {
           <Link href="/" className="text-sm font-medium text-brand hover:underline">
             ← Back home
           </Link>
-          <ModeToggle />
+          {/* <ModeToggle /> */}
         </div>
 
         <div className="rounded-2xl border border-border bg-card p-7 shadow-[0_30px_80px_rgba(48,73,68,.1)]">
-          <div className="mb-6">
-            <div className="mb-2 grid size-11 place-items-center rounded-xl bg-accent text-accent-foreground">
+          <div className="mb-6 text-center">
+            <div className="mb-2 grid size-11 mx-auto place-items-center rounded-xl bg-accent text-accent-foreground">
               <Building2 size={20} />
             </div>
             <p className="text-[.68rem] font-bold tracking-[.12em] text-brand uppercase">

@@ -10,9 +10,9 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { toast } from "sonner";
 
 import { useAuth } from "@/context/AuthContext";
-import { ModeToggle } from "@/components/common/Toggle";
 
 function LoginForm() {
   const router = useRouter();
@@ -36,12 +36,17 @@ function LoginForm() {
       const result = await login(email, password);
 
       if (result.ok) {
+        toast.success("Login successful. Redirecting...");
         router.replace(redirect);
       } else {
-        setErrorMessage(result.error || "Login failed.");
+        const message = result.error || "Login failed.";
+        setErrorMessage(message);
+        toast.error(message);
       }
     } catch {
-      setErrorMessage("Something went wrong. Please try again.");
+      const message = "Something went wrong. Please try again.";
+      setErrorMessage(message);
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }
@@ -58,12 +63,12 @@ function LoginForm() {
           <Link href="/" className="text-sm font-medium text-brand hover:underline">
             ← Back home
           </Link>
-          <ModeToggle />
+          {/* <ModeToggle /> */}
         </div>
 
         <div className="rounded-2xl border border-border bg-card p-7 shadow-[0_30px_80px_rgba(48,73,68,.1)]">
-          <div className="mb-6">
-            <div className="mb-2 grid size-11 place-items-center rounded-xl bg-accent text-accent-foreground">
+          <div className="mb-6 text-center">
+            <div className="mb-2 grid size-11 mx-auto place-items-center rounded-xl bg-accent text-accent-foreground">
               <LockKeyhole size={20} />
             </div>
             <p className="text-[.68rem] font-bold tracking-[.12em] text-brand uppercase">

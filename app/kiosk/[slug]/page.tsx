@@ -69,10 +69,10 @@ export default function KioskDashboardPage() {
         title="Kiosk & QR Code"
         description="Set up your reception desk tablet or share links for visitor check-in."
         actions={
-          kioskUrl ? (
+          registerUrl ? (
             <Button asChild>
               <Link
-                href={kioskUrl}
+                href={registerUrl}
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -85,7 +85,7 @@ export default function KioskDashboardPage() {
       />
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <DashboardPanel
+        <DashboardPanel 
           title="Check-in QR Code"
           description="Display this at your reception desk. Visitors scan to register."
         >

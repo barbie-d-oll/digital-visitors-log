@@ -5,7 +5,6 @@ import Organization from "@/lib/models/organization.model";
 import User from "@/lib/models/user.model";
 import Membership from "@/lib/models/membership.model";
 import { hashPassword } from "@/lib/auth/password";
-import { signToken, setTokenCookie } from "@/lib/auth/jwt";
 
 type RegisterPayload = {
   name: string;
@@ -89,16 +88,7 @@ export async function POST(request: Request) {
       joinedAt: new Date(),
     });
 
-    // Generate JWT
-    const token = signToken({
-      userId: user._id.toString(),
-      email: user.email,
-      role: user.role,
-      organizationId: organization._id.toString(),
-      organizationName: organization.name,
-    });
-
-    const response = NextResponse.json(
+    return NextResponse.json(
       {
         ok: true,
         user: {
@@ -112,10 +102,6 @@ export async function POST(request: Request) {
       },
       { status: 201 }
     );
-
-    response.cookies.set(setTokenCookie(token));
-
-    return response;
   } catch (error) {
     console.error("Registration error:", error);
     return NextResponse.json(
