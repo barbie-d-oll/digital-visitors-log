@@ -37,6 +37,7 @@ export default function KioskDashboardPage() {
       <PageHeader
         title="Kiosk & QR Code"
         description="Set up your reception desk tablet or share links for visitor check-in."
+        
         actions={
           orgSlug ? (
             <Button asChild>
