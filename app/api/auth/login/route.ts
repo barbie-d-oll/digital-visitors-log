@@ -4,7 +4,13 @@ import { connectToDB } from "@/lib/db/mongoose";
 import User from "@/lib/models/user.model";
 import Organization from "@/lib/models/organization.model";
 import { comparePassword } from "@/lib/auth/password";
-import { signToken, setTokenCookie } from "@/lib/auth/jwt";
+import {
+  signRefreshToken,
+  signToken,
+  setRefreshTokenCookie,
+  setTokenCookie,
+} from "@/lib/auth/jwt";
+import { getIsDepartmentHead } from "@/lib/auth/department-head";
 import { logEvent } from "@/lib/audit";
 
 type LoginPayload = {
@@ -66,14 +72,17 @@ export async function POST(request: Request) {
     // Update last login
     await User.updateOne({ _id: user._id }, { lastLogin: new Date() });
 
-    // Generate JWT
-    const token = signToken({
+    // Generate session tokens
+    const tokenPayload = {
       userId: user._id.toString(),
       email: user.email,
       role: user.role,
       organizationId: organization._id.toString(),
       organizationName: organization.name,
-    });
+    };
+    const token = signToken(tokenPayload);
+    const refreshToken = signRefreshToken(tokenPayload);
+    const isDepartmentHead = await getIsDepartmentHead(tokenPayload);
 
     const response = NextResponse.json({
       ok: true,
@@ -89,10 +98,12 @@ export async function POST(request: Request) {
           organization.logo || organization.settings?.logoUrl || "",
         plan: organization.plan,
         avatar: user.avatar,
+        isDepartmentHead,
       },
     });
 
     response.cookies.set(setTokenCookie(token));
+    response.cookies.set(setRefreshTokenCookie(refreshToken));
 
     // Audit log
     logEvent({

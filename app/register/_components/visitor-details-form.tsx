@@ -4,6 +4,7 @@ import {
   Building2,
   ChevronDown,
   Loader2,
+  Mail,
   Phone,
   UserRound,
 } from "lucide-react";
@@ -114,6 +115,19 @@ export function VisitorDetailsForm({
               onChange: (event) => onFieldChange("phone", event.target.value),
               onBlur: (event) => onPhoneBlur(event.target.value),
               required: true,
+            }}
+          />
+
+          <IconInput
+            label="Email"
+            icon={<Mail size={18} />}
+            inputProps={{
+              name: "email",
+              type: "email",
+              autoComplete: "email",
+              placeholder: "Email address",
+              value: form.email,
+              onChange: (event) => onFieldChange("email", event.target.value),
             }}
           />
 

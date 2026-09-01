@@ -228,6 +228,7 @@ export function PublicRegistrationClient() {
         setForm((current) => ({
           ...current,
           name: current.name || data.visitor.name || "",
+          email: current.email || data.visitor.email || "",
           company: current.company || data.visitor.company || "",
           purpose: current.purpose || data.visitor.purpose || "",
           staff: current.staff || data.visitor.staff || "",
@@ -294,6 +295,7 @@ export function PublicRegistrationClient() {
               ? departmentList.find((department) => department.name === visitTarget)
                   ?.id
               : undefined,
+          email: form.email.trim(),
           name,
           organizationSlug,
           phone,

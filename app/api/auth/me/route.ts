@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { connectToDB } from "@/lib/db/mongoose";
 import { getAuthUser } from "@/lib/auth/jwt";
+import { getIsDepartmentHead } from "@/lib/auth/department-head";
 import User from "@/lib/models/user.model";
 import Organization from "@/lib/models/organization.model";
 
@@ -27,6 +28,7 @@ export async function GET() {
     }
 
     const organization = await Organization.findById(user.organizationId);
+    const isDepartmentHead = await getIsDepartmentHead(authUser);
 
     return NextResponse.json({
       ok: true,
@@ -42,6 +44,7 @@ export async function GET() {
         organizationLogoUrl:
           organization?.logo || organization?.settings?.logoUrl || "",
         plan: organization?.plan ?? "free",
+        isDepartmentHead,
       },
     });
   } catch (error) {

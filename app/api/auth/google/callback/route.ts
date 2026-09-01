@@ -2,7 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { connectToDB } from "@/lib/db/mongoose";
 import { getGoogleTokens, getGoogleUser } from "@/lib/auth/google";
-import { signToken, setTokenCookie } from "@/lib/auth/jwt";
+import {
+  signRefreshToken,
+  signToken,
+  setRefreshTokenCookie,
+  setTokenCookie,
+} from "@/lib/auth/jwt";
 import User from "@/lib/models/user.model";
 import Organization from "@/lib/models/organization.model";
 import Membership from "@/lib/models/membership.model";
@@ -83,18 +88,21 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const token = signToken({
+    const tokenPayload = {
       userId: user._id.toString(),
       email: user.email,
       role: user.role,
       organizationId: organization._id.toString(),
       organizationName: organization.name,
-    });
+    };
+    const token = signToken(tokenPayload);
+    const refreshToken = signRefreshToken(tokenPayload);
 
     const response = NextResponse.redirect(
       new URL(isNewUser ? "/onboarding" : "/dashboard", request.url)
     );
     response.cookies.set(setTokenCookie(token));
+    response.cookies.set(setRefreshTokenCookie(refreshToken));
 
     return response;
   } catch (error) {

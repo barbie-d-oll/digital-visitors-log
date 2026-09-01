@@ -10,6 +10,8 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 
+const SESSION_REFRESH_INTERVAL_MS = 15 * 60 * 1000;
+
 export type UserProfile = {
   id: string;
   name: string;
@@ -21,6 +23,7 @@ export type UserProfile = {
   organizationSlug?: string;
   organizationLogoUrl?: string;
   plan?: string;
+  isDepartmentHead?: boolean;
 };
 
 type AuthContextType = {
@@ -44,12 +47,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
+  const refreshSession = useCallback(async () => {
+    try {
+      const res = await fetch("/api/auth/refresh", { method: "POST" });
+
+      if (!res.ok) {
+        if (res.status === 401) {
+          setUser(null);
+        }
+        return false;
+      }
+
+      const data = await res.json();
+      setUser(data.user);
+      return true;
+    } catch {
+      return false;
+    }
+  }, []);
+
   const fetchUser = useCallback(async () => {
     try {
       const res = await fetch("/api/auth/me");
       if (res.ok) {
         const data = await res.json();
         setUser(data.user);
+      } else if (res.status === 401) {
+        const refreshed = await refreshSession();
+        if (!refreshed) {
+          setUser(null);
+        }
       } else {
         setUser(null);
       }
@@ -58,7 +85,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [refreshSession]);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -67,6 +94,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     return () => window.clearTimeout(timeoutId);
   }, [fetchUser]);
+
+  useEffect(() => {
+    if (!user) {
+      return;
+    }
+
+    const handleFocus = () => {
+      void refreshSession();
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        void refreshSession();
+      }
+    };
+
+    const intervalId = window.setInterval(() => {
+      void refreshSession();
+    }, SESSION_REFRESH_INTERVAL_MS);
+
+    window.addEventListener("focus", handleFocus);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      window.clearInterval(intervalId);
+      window.removeEventListener("focus", handleFocus);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [refreshSession, user]);
 
   const login = async (email: string, password: string) => {
     try {

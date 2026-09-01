@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
     await connectToDB();
 
     const body = await request.json();
-    const { name, phone, company, purpose, staff, visitorCode } = body;
+    const { name, email, phone, company, purpose, staff, visitorCode } = body;
 
     if (!name?.trim() || !phone?.trim() || !purpose?.trim() || !staff?.trim()) {
       return NextResponse.json(
@@ -92,10 +92,16 @@ export async function POST(request: NextRequest) {
 
     const visitor = await Visitor.create({
       name: name.trim(),
+      email:
+        typeof email === "string" && email.trim()
+          ? email.trim().toLowerCase()
+          : undefined,
       phone: phone.trim(),
       company: company?.trim() || "",
       purpose: purpose.trim(),
       staff: staff.trim(),
+      visitTargetType: "individual",
+      assignmentStatus: "not_required",
       visitorCode: visitorCode || generateVisitorCode(name),
       organizationId: authUser.organizationId,
       status: "Checked In",

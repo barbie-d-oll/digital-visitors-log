@@ -60,10 +60,14 @@ export async function POST(request: NextRequest) {
     // Create visitor record
     const visitor = await Visitor.create({
       name: appointment.visitorName,
+      email: appointment.visitorEmail || "",
       phone: appointment.visitorPhone || "",
       company: appointment.visitorCompany || "",
       purpose: appointment.purpose,
       staff: appointment.hostName,
+      staffId: appointment.hostId,
+      visitTargetType: "individual",
+      assignmentStatus: "not_required",
       visitorCode,
       organizationId: organization._id,
       appointmentId: appointment._id,

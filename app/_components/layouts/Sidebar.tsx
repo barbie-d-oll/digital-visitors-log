@@ -2,11 +2,13 @@
 
 /* eslint-disable @next/next/no-img-element -- Organization logos can point to arbitrary external domains. */
 
+import type { ComponentType } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   ChevronLeft,
   ChevronRight,
+  ClipboardCheck,
   ClipboardList,
   Home,
   Layers,
@@ -45,7 +47,15 @@ type SidebarContentProps = SidebarProps & HeaderProps & {
   mode: "desktop" | "mobile";
 };
 
-const navGroups = [
+type NavItem = {
+  name: string;
+  description: string;
+  href: string;
+  icon: ComponentType<{ className?: string }>;
+  departmentHeadsOnly?: boolean;
+};
+
+const navGroups: Array<{ label: string; items: NavItem[] }> = [
   {
     label: "Main Menu",
     items: [
@@ -60,6 +70,13 @@ const navGroups = [
         description: "Visitor records",
         href: "/dashboard/visitor",
         icon: UserCheck,
+      },
+      {
+        name: "Assignments",
+        description: "Department queue",
+        href: "/dashboard/department-assignments",
+        icon: ClipboardCheck,
+        departmentHeadsOnly: true,
       },
       {
         name: "Appointments",
@@ -233,7 +250,12 @@ function SidebarContent({
               </p>
 
               <div className="space-y-2">
-                {group.items.map((item) => {
+                {group.items
+                  .filter(
+                    (item) =>
+                      !item.departmentHeadsOnly || user?.isDepartmentHead,
+                  )
+                  .map((item) => {
                   const Icon = item.icon;
                   const active = isActive(item.href);
 

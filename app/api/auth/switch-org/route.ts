@@ -1,7 +1,13 @@
 import { NextResponse } from "next/server";
 
 import { connectToDB } from "@/lib/db/mongoose";
-import { getAuthUser, signToken, setTokenCookie } from "@/lib/auth/jwt";
+import {
+  getAuthUser,
+  signRefreshToken,
+  signToken,
+  setRefreshTokenCookie,
+  setTokenCookie,
+} from "@/lib/auth/jwt";
 import Membership from "@/lib/models/membership.model";
 import Organization from "@/lib/models/organization.model";
 import User from "@/lib/models/user.model";
@@ -60,14 +66,16 @@ export async function POST(request: Request) {
     user.role = membership.role;
     await user.save();
 
-    // Issue new token with the switched org
-    const token = signToken({
+    // Issue new session tokens with the switched org
+    const tokenPayload = {
       userId: user._id.toString(),
       email: user.email,
       role: membership.role,
       organizationId: organization._id.toString(),
       organizationName: organization.name,
-    });
+    };
+    const token = signToken(tokenPayload);
+    const refreshToken = signRefreshToken(tokenPayload);
 
     const response = NextResponse.json({
       ok: true,
@@ -79,6 +87,7 @@ export async function POST(request: Request) {
     });
 
     response.cookies.set(setTokenCookie(token));
+    response.cookies.set(setRefreshTokenCookie(refreshToken));
 
     return response;
   } catch (error) {

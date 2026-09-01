@@ -1,5 +1,6 @@
 export type VisitorForm = {
   name: string;
+  email: string;
   phone: string;
   company: string;
   purpose: string;
@@ -23,6 +24,7 @@ export type DepartmentOption = {
 
 export const emptyForm: VisitorForm = {
   name: "",
+  email: "",
   phone: "",
   company: "",
   purpose: "",

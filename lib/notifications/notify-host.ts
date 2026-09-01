@@ -4,7 +4,11 @@ import { connectToDB } from "@/lib/db/mongoose";
 import Staff from "@/lib/models/staff.model";
 import Department from "@/lib/models/department.model";
 import Organization from "@/lib/models/organization.model";
-import { sendEmail, visitorArrivalEmail } from "./email";
+import {
+  departmentAssignmentRequestEmail,
+  sendEmail,
+  visitorArrivalEmail,
+} from "./email";
 import { sendSlackNotification } from "./slack";
 import { smsConfig } from "@/lib/sms/sms-config";
 
@@ -85,6 +89,8 @@ export async function notifyHost(params: NotifyHostParams): Promise<void> {
             org,
             isDepartmentHead: true,
             departmentName: department.name,
+            requiresAssignment: true,
+            assignmentUrl: getDepartmentAssignmentsUrl(),
           }),
         ),
       );
@@ -257,6 +263,11 @@ function escapeRegex(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+function getDepartmentAssignmentsUrl() {
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "");
+  return baseUrl ? `${baseUrl}/dashboard/department-assignments` : undefined;
+}
+
 interface NotifyPersonParams {
   person: { name: string; email?: string; phone?: string };
   visitorName: string;
@@ -269,6 +280,8 @@ interface NotifyPersonParams {
   org: any;
   isDepartmentHead?: boolean;
   departmentName?: string;
+  requiresAssignment?: boolean;
+  assignmentUrl?: string;
 }
 
 async function notifyPerson(params: NotifyPersonParams): Promise<void> {
@@ -283,26 +296,35 @@ async function notifyPerson(params: NotifyPersonParams): Promise<void> {
     org,
     isDepartmentHead,
     departmentName,
+    requiresAssignment,
+    assignmentUrl,
   } = params;
 
   const settings = org && "settings" in org ? (org.settings as Record<string, unknown>) : null;
 
   // Email notification (only if org has email notifications enabled)
   if (person.email && settings?.emailNotifications !== false) {
-    const { subject, html } = visitorArrivalEmail({
-      visitorName,
-      visitorCompany,
-      purpose,
-      hostName: person.name,
-      organizationName: orgName,
-      checkInTime,
-    });
+    const { subject, html } = requiresAssignment
+      ? departmentAssignmentRequestEmail({
+          visitorName,
+          visitorCompany,
+          purpose,
+          headName: person.name,
+          departmentName,
+          organizationName: orgName,
+          checkInTime,
+          assignmentUrl,
+        })
+      : visitorArrivalEmail({
+          visitorName,
+          visitorCompany,
+          purpose,
+          hostName: person.name,
+          organizationName: orgName,
+          checkInTime,
+        });
 
-    const emailSubject = isDepartmentHead
-      ? `🏢 ${visitorName} has arrived at ${departmentName} department`
-      : subject;
-
-    sendEmail({ to: person.email, subject: emailSubject, html }).catch((err) =>
+    sendEmail({ to: person.email, subject, html }).catch((err) =>
       console.error(`${isDepartmentHead ? "Dept head" : "Host"} email notification failed:`, err)
     );
   }
@@ -310,7 +332,9 @@ async function notifyPerson(params: NotifyPersonParams): Promise<void> {
   // SMS notification
   if (person.phone && settings?.smsEnabled) {
     const role = isDepartmentHead ? `(Dept Head - ${departmentName})` : "";
-    const message = `Hi ${person.name.split(" ")[0]}${role ? " " + role : ""}, ${visitorName}${visitorCompany ? ` from ${visitorCompany}` : ""} has arrived for a ${purpose.toLowerCase()}. Please head to reception.`;
+    const message = requiresAssignment
+      ? `Hi ${person.name.split(" ")[0]}${role ? " " + role : ""}, ${visitorName}${visitorCompany ? ` from ${visitorCompany}` : ""} is waiting for ${departmentName || "your department"}. Please assign a staff member in Visitor Log.`
+      : `Hi ${person.name.split(" ")[0]}${role ? " " + role : ""}, ${visitorName}${visitorCompany ? ` from ${visitorCompany}` : ""} has arrived for a ${purpose.toLowerCase()}. Please head to reception.`;
 
     smsConfig({
       destinations: [person.phone],

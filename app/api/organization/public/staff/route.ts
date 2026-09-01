@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import mongoose from "mongoose";
 
 import { connectToDB } from "@/lib/db/mongoose";
 import Organization from "@/lib/models/organization.model";
@@ -47,10 +48,14 @@ export async function GET(request: NextRequest) {
             .lean()
         : Promise.resolve([]),
       Department.find({ organizationId: org._id, status: "active" })
-        .select("name")
+        .select("name headId headIds")
         .sort({ name: 1 })
         .lean(),
     ]);
+    const publicDepartments = await filterDepartmentsWithActiveHeads(
+      departments as unknown as Array<Record<string, unknown>>,
+      org._id.toString(),
+    );
 
     return NextResponse.json({
       ok: true,
@@ -62,9 +67,9 @@ export async function GET(request: NextRequest) {
           ? (s.departmentId as unknown as { name: string }).name
           : "",
       })),
-      departments: departments.map((d) => ({
-        id: d._id,
-        name: d.name,
+      departments: publicDepartments.map((d) => ({
+        id: getObjectId(d._id) || "",
+        name: typeof d.name === "string" ? d.name : "",
       })),
     });
   } catch (error) {
@@ -78,4 +83,74 @@ export async function GET(request: NextRequest) {
 
 function escapeRegex(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function getObjectId(value: unknown): string | null {
+  if (!value) {
+    return null;
+  }
+
+  if (typeof value === "string") {
+    return mongoose.isValidObjectId(value) ? value : null;
+  }
+
+  if (value instanceof mongoose.Types.ObjectId) {
+    return value.toString();
+  }
+
+  if (typeof value === "object" && "_id" in value) {
+    return getObjectId((value as { _id?: unknown })._id);
+  }
+
+  const valueWithToString = value as { toString?: () => string };
+  if (typeof valueWithToString.toString === "function") {
+    const id = valueWithToString.toString();
+    return mongoose.isValidObjectId(id) ? id : null;
+  }
+
+  return null;
+}
+
+function getDepartmentHeadIds(department: {
+  headId?: unknown;
+  headIds?: unknown;
+}) {
+  const headIds = Array.isArray(department.headIds)
+    ? department.headIds.map(getObjectId).filter((id): id is string => Boolean(id))
+    : [];
+  const fallbackHeadId = getObjectId(department.headId);
+
+  if (headIds.length === 0 && fallbackHeadId) {
+    headIds.push(fallbackHeadId);
+  }
+
+  return Array.from(new Set(headIds));
+}
+
+async function filterDepartmentsWithActiveHeads(
+  departments: Array<Record<string, unknown>>,
+  organizationId: string,
+) {
+  const headIds = Array.from(
+    new Set(departments.flatMap((department) => getDepartmentHeadIds(department))),
+  );
+
+  if (headIds.length === 0) {
+    return [];
+  }
+
+  const activeHeads = await Staff.find({
+    _id: { $in: headIds },
+    organizationId,
+    status: "active",
+  })
+    .select("_id")
+    .lean();
+  const activeHeadIds = new Set(
+    activeHeads.map((head) => getObjectId(head._id)).filter(Boolean),
+  );
+
+  return departments.filter((department) =>
+    getDepartmentHeadIds(department).some((headId) => activeHeadIds.has(headId)),
+  );
 }

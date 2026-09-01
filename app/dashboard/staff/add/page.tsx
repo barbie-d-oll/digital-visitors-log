@@ -61,8 +61,9 @@ export default function AddStaffPage() {
         return;
       }
 
-      toast.success("Staff added successfully!");
-      setSuccess("Staff added successfully!");
+      const message = data.message || "Staff added successfully!";
+      toast.success(message);
+      setSuccess(message);
       setName("");
       setEmail("");
       setPhone("");

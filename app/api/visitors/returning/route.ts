@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
       organizationId: organization._id,
     })
       .sort({ createdAt: -1 })
-      .select("name phone company purpose staff")
+      .select("name email phone company purpose staff")
       .lean();
 
     if (!previousVisit) {
@@ -48,6 +48,7 @@ export async function POST(request: NextRequest) {
       found: true,
       visitor: {
         name: previousVisit.name,
+        email: previousVisit.email,
         phone: previousVisit.phone,
         company: previousVisit.company,
         purpose: previousVisit.purpose,
