@@ -3,6 +3,11 @@ import mongoose from "mongoose";
 
 import { connectToDB } from "@/lib/db/mongoose";
 import { getAuthUser } from "@/lib/auth/jwt";
+import {
+  ensureStaffLoginAccess,
+  summarizeStaffLoginProvision,
+  type StaffLoginProvisionResult,
+} from "@/lib/auth/staff-login";
 import Department from "@/lib/models/department.model";
 import Staff from "@/lib/models/staff.model";
 import { getErrorMessage } from "@/lib/utils";
@@ -55,6 +60,21 @@ async function validateDepartmentHeadIds(
   return staffCount === headIds.length
     ? null
     : "Please choose active staff members from your organization.";
+}
+
+function getDepartmentLoginMessage(
+  defaultMessage: string,
+  results: StaffLoginProvisionResult[],
+) {
+  const summary = summarizeStaffLoginProvision(results);
+
+  if (summary.created === 0) {
+    return defaultMessage;
+  }
+
+  return summary.failed === 0
+    ? `${defaultMessage} Department head login details were emailed.`
+    : `${defaultMessage} Some department head login emails could not be sent. Please check email settings.`;
 }
 
 export async function GET(
@@ -196,7 +216,33 @@ export async function PATCH(
       );
     }
 
-    return NextResponse.json({ ok: true, department });
+    const headStaff = await Staff.find({
+      _id: { $in: headIds },
+      organizationId: authUser.organizationId,
+    }).lean();
+    const loginResults: StaffLoginProvisionResult[] = [];
+
+    for (const member of headStaff) {
+      const employeeEmail = member.email?.toLowerCase();
+      if (!employeeEmail) continue;
+
+      const loginAccess = await ensureStaffLoginAccess({
+        name: member.name,
+        email: employeeEmail,
+        organizationId: authUser.organizationId,
+        invitedByUserId: authUser.userId,
+      });
+      loginResults.push(loginAccess);
+    }
+
+    return NextResponse.json({
+      ok: true,
+      department,
+      message: getDepartmentLoginMessage(
+        "Department profile updated successfully.",
+        loginResults,
+      ),
+    });
   } catch (error) {
     console.error("Update department error:", error);
     return NextResponse.json(

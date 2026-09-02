@@ -3,13 +3,13 @@ import mongoose from "mongoose";
 
 import { connectToDB } from "@/lib/db/mongoose";
 import { getAuthUser } from "@/lib/auth/jwt";
-import { generateTemporaryPassword, hashPassword } from "@/lib/auth/password";
+import {
+  ensureStaffLoginAccess,
+  summarizeStaffLoginProvision,
+  type StaffLoginProvisionResult,
+} from "@/lib/auth/staff-login";
 import Department from "@/lib/models/department.model";
-import Membership from "@/lib/models/membership.model";
-import Organization from "@/lib/models/organization.model";
 import Staff from "@/lib/models/staff.model";
-import User from "@/lib/models/user.model";
-import { sendEmail, staffWelcomeEmail } from "@/lib/notifications/email";
 import { getErrorMessage } from "@/lib/utils";
 
 const MAX_DEPARTMENT_HEADS = 2;
@@ -60,6 +60,21 @@ async function validateDepartmentHeadIds(
   return staffCount === headIds.length
     ? null
     : "Please choose active staff members from your organization.";
+}
+
+function getDepartmentLoginMessage(
+  defaultMessage: string,
+  results: StaffLoginProvisionResult[],
+) {
+  const summary = summarizeStaffLoginProvision(results);
+
+  if (summary.created === 0) {
+    return defaultMessage;
+  }
+
+  return summary.failed === 0
+    ? `${defaultMessage} Department head login details were emailed.`
+    : `${defaultMessage} Some department head login emails could not be sent. Please check email settings.`;
 }
 
 export async function GET() {
@@ -149,82 +164,32 @@ export async function POST(request: NextRequest) {
       organizationId: authUser.organizationId,
     }).lean();
 
+    const loginResults: StaffLoginProvisionResult[] = [];
+
     for (const member of headStaff) {
       const employeeEmail = member.email?.toLowerCase();
       if (!employeeEmail) continue;
 
-      let user = await User.findOne({
+      const loginAccess = await ensureStaffLoginAccess({
+        name: member.name,
         email: employeeEmail,
         organizationId: authUser.organizationId,
+        invitedByUserId: authUser.userId,
       });
-
-      let temporaryPassword: string | null = null;
-
-      if (!user) {
-        temporaryPassword = generateTemporaryPassword();
-        user = await User.create({
-          name: member.name,
-          email: employeeEmail,
-          password: await hashPassword(temporaryPassword),
-          role: "staff",
-          organizationId: authUser.organizationId,
-          authProvider: "credentials",
-          status: "active",
-        });
-
-        await Membership.create({
-          userId: user._id,
-          organizationId: authUser.organizationId,
-          role: "staff",
-          status: "active",
-          invitedBy: authUser.userId,
-          joinedAt: new Date(),
-        });
-      } else {
-        const existingMembership = await Membership.findOne({
-          userId: user._id,
-          organizationId: authUser.organizationId,
-        });
-
-        if (!existingMembership) {
-          await Membership.create({
-            userId: user._id,
-            organizationId: authUser.organizationId,
-            role: "staff",
-            status: "active",
-            invitedBy: authUser.userId,
-            joinedAt: new Date(),
-          });
-        }
-
-        if (!user.password) {
-          temporaryPassword = generateTemporaryPassword();
-          user.password = await hashPassword(temporaryPassword);
-          user.status = "active";
-          user.role = "staff";
-          await user.save();
-        }
-      }
-
-      if (temporaryPassword) {
-        const organization = await Organization.findById(authUser.organizationId);
-        const loginUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/auth/login`;
-
-        const { subject, html } = staffWelcomeEmail({
-          userName: member.name,
-          organizationName: organization?.name || "your organization",
-          email: employeeEmail,
-          password: temporaryPassword,
-          loginUrl,
-        });
-
-        sendEmail({ to: employeeEmail, subject, html }).catch((err) =>
-          console.error("Department head login email failed:", err)
-        );
-      }
+      loginResults.push(loginAccess);
     }
 
-    return NextResponse.json({ ok: true, department }, { status: 201 });
+    return NextResponse.json(
+      {
+        ok: true,
+        department,
+        message: getDepartmentLoginMessage(
+          "Department added successfully.",
+          loginResults,
+        ),
+      },
+      { status: 201 },
+    );
   } catch (error) {
     console.error("Create department error:", error);
     return NextResponse.json(

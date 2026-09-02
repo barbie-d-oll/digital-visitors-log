@@ -1,6 +1,7 @@
 "use client";
 
-import { Bell, Menu } from "lucide-react";
+import Link from "next/link";
+import { Bell, ChevronDown, LogOut, Menu, UserRound } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import FullscreenButton from "@/components/common/Fullscreen";
@@ -8,12 +9,13 @@ import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-import type { UserProfile } from "@/context/AuthContext";
+import { useAuth, type UserProfile } from "@/context/AuthContext";
 
 type HeaderProps = {
   setSidebarOpen: (open: boolean) => void;
@@ -30,6 +32,8 @@ function getInitials(name: string): string {
 }
 
 export default function Header({ setSidebarOpen, user }: HeaderProps) {
+  const { logout } = useAuth();
+
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur">
       <div className="flex h-[4.5rem] items-center justify-between px-4 sm:px-8 lg:px-10">
@@ -47,7 +51,7 @@ export default function Header({ setSidebarOpen, user }: HeaderProps) {
         <div className="hidden md:block" aria-hidden="true" />
 
         <div className="ml-auto flex items-center gap-4">
-        <FullscreenButton />
+          <FullscreenButton />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -69,25 +73,74 @@ export default function Header({ setSidebarOpen, user }: HeaderProps) {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <div className="flex items-center gap-3">
-            <Avatar size="lg">
-              <AvatarImage
-                src={user?.avatar || ""}
-                alt={user?.name || "User"}
-              />
-              <AvatarFallback>
-                {user ? getInitials(user.name) : "U"}
-              </AvatarFallback>
-            </Avatar>
-            {/* <div className="hidden min-w-0 sm:block">
-              <p className="truncate text-sm font-semibold text-foreground">
-                {user?.name || "User"}
-              </p>
-              <p className="truncate text-sm text-muted-foreground">
-                {user?.organizationName || "Organization"}
-              </p>
-            </div> */}
-          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                type="button"
+                variant="ghost"
+                className="h-auto min-w-0 gap-2 rounded-full px-2 py-1.5"
+                aria-label="Open user menu"
+              >
+                <Avatar size="lg">
+                  <AvatarImage
+                    src={user?.avatar || ""}
+                    alt={user?.name || "User"}
+                  />
+                  <AvatarFallback>
+                    {user ? getInitials(user.name) : "U"}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="hidden min-w-0 text-left sm:block">
+                  <span className="block max-w-40 truncate text-sm font-semibold text-foreground">
+                    {user?.name || "User"}
+                  </span>
+                  <span className="block max-w-40 truncate text-xs text-muted-foreground">
+                    {user?.organizationName || "Organization"}
+                  </span>
+                </span>
+                <ChevronDown className="hidden size-4 text-muted-foreground sm:block" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-72">
+              <DropdownMenuLabel className="p-2">
+                <span className="flex min-w-0 items-center gap-3">
+                  <Avatar size="lg">
+                    <AvatarImage
+                      src={user?.avatar || ""}
+                      alt={user?.name || "User"}
+                    />
+                    <AvatarFallback>
+                      {user ? getInitials(user.name) : "U"}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="min-w-0">
+                    <span className="block truncate text-sm font-semibold text-foreground">
+                      {user?.name || "User"}
+                    </span>
+                    <span className="block truncate text-xs font-normal text-muted-foreground">
+                      {user?.email || ""}
+                    </span>
+                  </span>
+                </span>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link href="/dashboard/profile/edit">
+                  <UserRound className="size-4" />
+                  Edit profile
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                variant="destructive"
+                onSelect={() => {
+                  void logout();
+                }}
+              >
+                <LogOut className="size-4" />
+                Sign out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </header>

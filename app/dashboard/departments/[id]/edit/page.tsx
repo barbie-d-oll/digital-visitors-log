@@ -172,7 +172,8 @@ export default function EditDepartmentPage() {
       setDescription(department.description || "");
       setHeadIds(getHeadIds(department));
       setStatus(department.status === "inactive" ? "inactive" : "active");
-      const message = "Department profile updated successfully.";
+      const message =
+        data.message || "Department profile updated successfully.";
       setSuccess(message);
       toast.success(message);
     } catch (err) {

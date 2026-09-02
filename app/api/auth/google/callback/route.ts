@@ -12,9 +12,18 @@ import User from "@/lib/models/user.model";
 import Organization from "@/lib/models/organization.model";
 import Membership from "@/lib/models/membership.model";
 
+function getSafeRedirect(value: string | null) {
+  if (!value || !value.startsWith("/") || value.startsWith("//")) {
+    return "/dashboard";
+  }
+
+  return value;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const code = request.nextUrl.searchParams.get("code");
+    const redirect = getSafeRedirect(request.nextUrl.searchParams.get("state"));
 
     if (!code) {
       return NextResponse.redirect(
@@ -24,6 +33,12 @@ export async function GET(request: NextRequest) {
 
     const tokens = await getGoogleTokens(code);
     const googleUser = await getGoogleUser(tokens.access_token);
+
+    if (!googleUser.verified_email) {
+      return NextResponse.redirect(
+        new URL("/auth/login?error=google_email_unverified", request.url)
+      );
+    }
 
     await connectToDB();
 
@@ -99,7 +114,7 @@ export async function GET(request: NextRequest) {
     const refreshToken = signRefreshToken(tokenPayload);
 
     const response = NextResponse.redirect(
-      new URL(isNewUser ? "/onboarding" : "/dashboard", request.url)
+      new URL(isNewUser ? "/onboarding" : redirect, request.url)
     );
     response.cookies.set(setTokenCookie(token));
     response.cookies.set(setRefreshTokenCookie(refreshToken));

@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
+import mongoose from "mongoose";
 
 import { connectToDB } from "@/lib/db/mongoose";
 import { getAuthUser } from "@/lib/auth/jwt";
-import { generateTemporaryPassword, hashPassword } from "@/lib/auth/password";
-import Membership from "@/lib/models/membership.model";
-import Organization from "@/lib/models/organization.model";
+import {
+  ensureStaffLoginAccess,
+  summarizeStaffLoginProvision,
+} from "@/lib/auth/staff-login";
+import Department from "@/lib/models/department.model";
 import Staff from "@/lib/models/staff.model";
-import User from "@/lib/models/user.model";
-import { sendEmail, staffWelcomeEmail } from "@/lib/notifications/email";
 import { getErrorMessage } from "@/lib/utils";
 
 export async function GET(request: NextRequest) {
@@ -64,21 +65,47 @@ export async function POST(request: NextRequest) {
 
     await connectToDB();
 
-    const body = await request.json();
-    const { name, email, phone, departmentId, position } = body;
+    const body = (await request.json()) as Record<string, unknown>;
+    const name = typeof body.name === "string" ? body.name.trim() : "";
+    const email =
+      typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
+    const phone = typeof body.phone === "string" ? body.phone.trim() : "";
+    const departmentId =
+      typeof body.departmentId === "string" ? body.departmentId.trim() : "";
+    const position =
+      typeof body.position === "string" ? body.position.trim() : "";
 
-    if (!name?.trim() || !email?.trim()) {
+    if (!name || !email) {
       return NextResponse.json(
         { error: "Name and email are required." },
         { status: 400 }
       );
     }
 
-    const normalizedEmail = email.trim().toLowerCase();
+    if (departmentId && !mongoose.isValidObjectId(departmentId)) {
+      return NextResponse.json(
+        { error: "Please choose a valid department." },
+        { status: 400 }
+      );
+    }
+
+    if (departmentId) {
+      const departmentExists = await Department.exists({
+        _id: departmentId,
+        organizationId: authUser.organizationId,
+      });
+
+      if (!departmentExists) {
+        return NextResponse.json(
+          { error: "Please choose a valid department." },
+          { status: 400 }
+        );
+      }
+    }
 
     // Check for duplicate email within org
     const existing = await Staff.findOne({
-      email: normalizedEmail,
+      email,
       organizationId: authUser.organizationId,
     });
 
@@ -89,92 +116,35 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    let temporaryPassword: string | null = null;
-
-    let user = await User.findOne({
-      email: normalizedEmail,
+    const loginAccess = await ensureStaffLoginAccess({
+      name,
+      email,
       organizationId: authUser.organizationId,
+      invitedByUserId: authUser.userId,
     });
-
-    if (!user) {
-      temporaryPassword = generateTemporaryPassword();
-      user = await User.create({
-        name: name.trim(),
-        email: normalizedEmail,
-        password: await hashPassword(temporaryPassword),
-        role: "staff",
-        organizationId: authUser.organizationId,
-        authProvider: "credentials",
-        status: "active",
-      });
-
-      await Membership.create({
-        userId: user._id,
-        organizationId: authUser.organizationId,
-        role: "staff",
-        status: "active",
-        invitedBy: authUser.userId,
-        joinedAt: new Date(),
-      });
-    } else {
-      const existingMembership = await Membership.findOne({
-        userId: user._id,
-        organizationId: authUser.organizationId,
-      });
-
-      if (!existingMembership) {
-        await Membership.create({
-          userId: user._id,
-          organizationId: authUser.organizationId,
-          role: "staff",
-          status: "active",
-          invitedBy: authUser.userId,
-          joinedAt: new Date(),
-        });
-      }
-
-      if (!user.password) {
-        temporaryPassword = generateTemporaryPassword();
-        user.password = await hashPassword(temporaryPassword);
-        user.role = "staff";
-        user.status = "active";
-        await user.save();
-      }
-    }
 
     const member = await Staff.create({
-      name: name.trim(),
-      email: normalizedEmail,
-      phone: phone?.trim() || "",
+      name,
+      email,
+      phone,
       departmentId: departmentId || undefined,
-      position: position?.trim() || "",
+      position,
       organizationId: authUser.organizationId,
     });
 
-    if (temporaryPassword) {
-      const organization = await Organization.findById(authUser.organizationId);
-      const loginUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/auth/login`;
-
-      const { subject, html } = staffWelcomeEmail({
-        userName: name.trim(),
-        organizationName: organization?.name || "your organization",
-        email: normalizedEmail,
-        password: temporaryPassword,
-        loginUrl,
-      });
-
-      sendEmail({ to: normalizedEmail, subject, html }).catch((err) =>
-        console.error("Staff login email failed:", err)
-      );
-    }
+    const loginSummary = summarizeStaffLoginProvision([loginAccess]);
+    const message =
+      loginSummary.created === 0
+        ? "Staff added successfully. This person already has login access."
+        : loginSummary.failed === 0
+          ? "Staff added successfully. Login details were emailed to them."
+          : "Staff added successfully, but login details could not be emailed. Please check email settings.";
 
     return NextResponse.json(
       {
         ok: true,
         staff: member,
-        message: temporaryPassword
-          ? "Staff added successfully. Login details were emailed to them."
-          : "Staff added successfully.",
+        message,
       },
       { status: 201 }
     );

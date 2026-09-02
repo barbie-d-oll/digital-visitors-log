@@ -14,6 +14,23 @@ import { toast } from "sonner";
 
 import { useAuth } from "@/context/AuthContext";
 
+function getOAuthErrorMessage(error: string | null) {
+  switch (error) {
+    case "google_not_configured":
+      return "Google login is not configured yet. Please add valid Google OAuth credentials.";
+    case "google_email_unverified":
+      return "Your Google email must be verified before you can sign in.";
+    case "oauth_failed":
+      return "Google login failed. Please try again.";
+    case "org_inactive":
+      return "Your organization is inactive. Please contact an administrator.";
+    case "no_code":
+      return "Google did not return an authorization code. Please try again.";
+    default:
+      return "";
+  }
+}
+
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -26,6 +43,8 @@ function LoginForm() {
   const [errorMessage, setErrorMessage] = useState("");
 
   const redirect = searchParams.get("redirect") || "/dashboard";
+  const oauthErrorMessage = getOAuthErrorMessage(searchParams.get("error"));
+  const visibleErrorMessage = errorMessage || oauthErrorMessage;
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -53,7 +72,12 @@ function LoginForm() {
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = "/api/auth/google";
+    const params = new URLSearchParams();
+    if (redirect) {
+      params.set("redirect", redirect);
+    }
+
+    window.location.href = `/api/auth/google?${params.toString()}`;
   };
 
   return (
@@ -131,7 +155,7 @@ function LoginForm() {
 
             <div className="flex items-center justify-between pt-2">
               <div className="min-h-7 text-xs text-destructive" aria-live="polite">
-                {errorMessage}
+                {visibleErrorMessage}
               </div>
               <Link href="/auth/forgot-password" className="text-xs font-medium text-brand hover:underline whitespace-nowrap">
                 Forgot password?

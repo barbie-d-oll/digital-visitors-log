@@ -1,11 +1,24 @@
-const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID!;
-const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET!;
-const REDIRECT_URI = `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/google/callback`;
+const GOOGLE_CALLBACK_PATH = "/api/auth/google/callback";
+
+function getRequiredEnv(name: string): string {
+  const value = process.env[name]?.trim();
+
+  if (!value || value.startsWith("your-")) {
+    throw new Error(`${name} is not configured.`);
+  }
+
+  return value;
+}
+
+function getGoogleRedirectUri(): string {
+  const appUrl = getRequiredEnv("NEXT_PUBLIC_APP_URL").replace(/\/$/, "");
+  return `${appUrl}${GOOGLE_CALLBACK_PATH}`;
+}
 
 export function getGoogleOAuthUrl(state?: string): string {
   const params = new URLSearchParams({
-    client_id: GOOGLE_CLIENT_ID,
-    redirect_uri: REDIRECT_URI,
+    client_id: getRequiredEnv("GOOGLE_CLIENT_ID"),
+    redirect_uri: getGoogleRedirectUri(),
     response_type: "code",
     scope: "openid email profile",
     access_type: "offline",
@@ -40,9 +53,9 @@ export async function getGoogleTokens(
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({
       code,
-      client_id: GOOGLE_CLIENT_ID,
-      client_secret: GOOGLE_CLIENT_SECRET,
-      redirect_uri: REDIRECT_URI,
+      client_id: getRequiredEnv("GOOGLE_CLIENT_ID"),
+      client_secret: getRequiredEnv("GOOGLE_CLIENT_SECRET"),
+      redirect_uri: getGoogleRedirectUri(),
       grant_type: "authorization_code",
     }),
   });

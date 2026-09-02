@@ -59,7 +59,7 @@ export default function AddDepartmentPage() {
         return;
       }
 
-      toast.success("Department added successfully.");
+      toast.success(data.message || "Department added successfully.");
       router.push("/dashboard/departments");
     } catch {
       const message = "Something went wrong.";
