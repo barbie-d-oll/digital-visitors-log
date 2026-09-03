@@ -43,6 +43,8 @@ export async function GET() {
         organizationSlug: organization?.slug ?? "",
         organizationLogoUrl:
           organization?.logo || organization?.settings?.logoUrl || "",
+        primaryColor: organization?.settings?.primaryColor || "#1b6b61",
+        customBranding: organization?.settings?.customBranding || false,
         plan: organization?.plan ?? "free",
         isDepartmentHead,
       },

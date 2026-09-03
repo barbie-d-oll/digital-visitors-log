@@ -9,6 +9,7 @@ import {
   ReactNode,
 } from "react";
 import { useRouter } from "next/navigation";
+import { applyBrandingTheme, clearBrandingTheme } from "@/lib/theme/branding";
 
 const SESSION_REFRESH_INTERVAL_MS = 15 * 60 * 1000;
 
@@ -22,6 +23,8 @@ export type UserProfile = {
   organizationName: string;
   organizationSlug?: string;
   organizationLogoUrl?: string;
+  primaryColor?: string;
+  customBranding?: boolean;
   plan?: string;
   isDepartmentHead?: boolean;
 };
@@ -124,6 +127,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, [refreshSession, user]);
 
+  useEffect(() => {
+    if (user?.primaryColor !== undefined || user?.customBranding !== undefined) {
+      applyBrandingTheme(user?.primaryColor, user?.customBranding ?? false);
+    } else {
+      clearBrandingTheme();
+    }
+  }, [user?.primaryColor, user?.customBranding]);
+
   const login = async (email: string, password: string) => {
     try {
       const res = await fetch("/api/auth/login", {
@@ -149,6 +160,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       await fetch("/api/auth/logout", { method: "POST" });
     } finally {
+      clearBrandingTheme();
       setUser(null);
       router.push("/auth/login");
     }

@@ -80,6 +80,8 @@ async function getFreshSession(refreshToken: string | null) {
       organizationSlug: organization.slug,
       organizationLogoUrl:
         organization.logo || organization.settings?.logoUrl || "",
+      primaryColor: organization.settings?.primaryColor || "#1b6b61",
+      customBranding: organization.settings?.customBranding || false,
       plan: organization.plan,
       isDepartmentHead,
     },

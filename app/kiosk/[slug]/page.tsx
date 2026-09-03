@@ -7,6 +7,7 @@ import Link from "next/link";
 
 import FullscreenButton from "@/components/common/Fullscreen";
 import { ModeToggle } from "@/components/common/Toggle";
+import { applyBrandingTheme, clearBrandingTheme } from "@/lib/theme/branding";
 
 interface Branding {
   primaryColor?: string;
@@ -95,6 +96,10 @@ export default function KioskPage({
             name: data.name,
             branding: data.branding ?? null,
           });
+
+          if (data.branding?.primaryColor) {
+            applyBrandingTheme(data.branding.primaryColor, true);
+          }
         }
       } catch (error) {
         console.error("Failed to load kiosk organization:", error);
@@ -113,6 +118,7 @@ export default function KioskPage({
 
     return () => {
       cancelled = true;
+      clearBrandingTheme();
     };
   }, [slug]);
 

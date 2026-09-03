@@ -3,7 +3,7 @@
 /* eslint-disable @next/next/no-img-element -- Organization logos can point to arbitrary external domains. */
 
 import type { ChangeEvent, FormEvent } from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ImageIcon, Loader2, Save, Upload } from "lucide-react";
 import { toast } from "sonner";
 
@@ -15,6 +15,8 @@ import {
 } from "../../_components/dashboard/DashboardPrimitives";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
+import { BrandingSettingsSection } from "./_components/BrandingSettingsSection";
+import { applyBrandingTheme } from "@/lib/theme/branding";
 
 interface OrgSettings {
   name: string;
@@ -49,12 +51,31 @@ export default function SettingsPage() {
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
   const isOwner = user?.role === "owner";
+  const savedBrandingRef = useRef<{ customBranding: boolean; primaryColor: string }>({
+    customBranding: false,
+    primaryColor: "#1b6b61",
+  });
+
+  useEffect(() => {
+    return () => {
+      // Revert to saved branding when leaving the settings page if unsaved
+      applyBrandingTheme(
+        savedBrandingRef.current.primaryColor,
+        savedBrandingRef.current.customBranding,
+      );
+    };
+  }, []);
 
   useEffect(() => {
     fetch("/api/organization")
       .then((res) => res.json())
       .then((data) => {
         if (data.organization) {
+          const customBranding = Boolean(data.organization.settings?.customBranding);
+          const primaryColor = data.organization.settings?.primaryColor || "#1b6b61";
+          savedBrandingRef.current = { customBranding, primaryColor };
+          applyBrandingTheme(primaryColor, customBranding);
+
           setOrg({
             name: data.organization.name || "",
             phone: data.organization.phone || "",
@@ -70,8 +91,8 @@ export default function SettingsPage() {
               notifyHostOnArrival: data.organization.settings?.notifyHostOnArrival !== false,
               requireNda: data.organization.settings?.requireNda || false,
               ndaText: data.organization.settings?.ndaText || "",
-              customBranding: data.organization.settings?.customBranding || false,
-              primaryColor: data.organization.settings?.primaryColor || "#1b6b61",
+              customBranding,
+              primaryColor,
               logoUrl: data.organization.logo || data.organization.settings?.logoUrl || "",
               visitPurposes: data.organization.settings?.visitPurposes || ["Meeting", "Delivery", "Interview", "Event", "Other"],
               requireCompany: data.organization.settings?.requireCompany || false,
@@ -120,6 +141,11 @@ export default function SettingsPage() {
       }
 
       setOrg((current) => current ? { ...current, logo, settings } : current);
+      savedBrandingRef.current = {
+        customBranding: settings.customBranding,
+        primaryColor: settings.primaryColor,
+      };
+      applyBrandingTheme(settings.primaryColor, settings.customBranding);
       await refresh();
       const message = "Settings saved successfully.";
       setSuccess(message);
@@ -140,6 +166,18 @@ export default function SettingsPage() {
     setOrg((prev) =>
       prev ? { ...prev, settings: { ...prev.settings, [key]: value } } : prev
     );
+  };
+
+  const handlePrimaryColorChange = (newColor: string) => {
+    updateSetting("primaryColor", newColor);
+    if (org?.settings.customBranding) {
+      applyBrandingTheme(newColor, true);
+    }
+  };
+
+  const handleCustomBrandingToggle = (enabled: boolean) => {
+    updateSetting("customBranding", enabled);
+    applyBrandingTheme(org?.settings.primaryColor || "#1b6b61", enabled);
   };
 
   const updateLogo = (value: string) => {
@@ -341,31 +379,26 @@ export default function SettingsPage() {
               <span className="text-sm font-medium">Require company name from visitors</span>
             </label>
 
-            <FormField label="Auto-checkout after (hours)" htmlFor="s-autocheckout" helper="Leave empty to disable. Visitors will be auto-signed-out after this many hours.">
+            {/* <FormField label="Auto-checkout after (hours)" htmlFor="s-autocheckout" helper="Leave empty to disable. Visitors will be auto-signed-out after this many hours.">
               <input id="s-autocheckout" type="number" min="1" max="24" className={fieldControlClassName} value={org.settings.autoCheckoutHours || ""} onChange={(e) => updateSetting("autoCheckoutHours", e.target.value ? parseInt(e.target.value) : null)} placeholder="8" />
-            </FormField>
+            </FormField> */}
           </div>
         </DashboardPanel>
 
         {/* Branding */}
-        <DashboardPanel title="Custom Branding" description="Customize the look of your public visitor pages.">
-          <div className="space-y-4">
-            <label className="flex items-center gap-3 cursor-pointer">
-              <input type="checkbox" className="size-4 rounded" checked={org.settings.customBranding} onChange={(e) => updateSetting("customBranding", e.target.checked)} />
-              <span className="text-sm font-medium">Enable custom branding on public pages</span>
-            </label>
-
-            {org.settings.customBranding && (
-              <div className="grid gap-4 md:grid-cols-2 pl-7">
-                <FormField label="Primary Color" htmlFor="s-color">
-                  <div className="flex items-center gap-3">
-                    <input id="s-color" type="color" className="size-10 rounded cursor-pointer border border-input" value={org.settings.primaryColor} onChange={(e) => updateSetting("primaryColor", e.target.value)} />
-                    <input className={fieldControlClassName} value={org.settings.primaryColor} onChange={(e) => updateSetting("primaryColor", e.target.value)} placeholder="#1b6b61" />
-                  </div>
-                </FormField>
-              </div>
-            )}
-          </div>
+        <DashboardPanel
+          title="Custom Branding"
+          description="Customize your brand colors across your public visitor pages and workspace in real time."
+        >
+          <BrandingSettingsSection
+            customBranding={org.settings.customBranding}
+            primaryColor={org.settings.primaryColor}
+            orgName={org.name}
+            logoUrl={logoPreview}
+            disabled={!isOwner}
+            onCustomBrandingChange={handleCustomBrandingToggle}
+            onPrimaryColorChange={handlePrimaryColorChange}
+          />
         </DashboardPanel>
 
         {/* Save */}
