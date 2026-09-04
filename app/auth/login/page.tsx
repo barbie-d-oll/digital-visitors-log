@@ -2,7 +2,9 @@
 
 import { FormEvent, Suspense, useState } from "react";
 import {
+  ArrowLeft,
   ArrowRight,
+  Building2,
   Eye,
   EyeOff,
   LockKeyhole,
@@ -13,6 +15,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 
 import { useAuth } from "@/context/AuthContext";
+import Image from "next/image";
+ 
 
 function getOAuthErrorMessage(error: string | null) {
   switch (error) {
@@ -81,117 +85,182 @@ function LoginForm() {
   };
 
   return (
-    <main className="flex min-h-svh items-center justify-center bg-background px-4 py-10">
-      <div className="w-full max-w-md">
-        <div className="mb-6 flex items-center justify-between">
-          <Link href="/" className="text-sm font-medium text-brand hover:underline">
-            ← Back home
+    <div className="flex min-h-screen w-full flex-col lg:flex-row bg-background">
+      {/* LEFT COLUMN: Hero Image Banner */}
+      <div className="relative hidden w-full lg:flex lg:w-1/2 flex-col justify-between overflow-hidden bg-muted p-12 text-white select-none">
+        {/* Background Image */}
+        <Image
+          src="/images/auth-signin.jpg"
+          alt="Modern Reception Desk"
+          fill
+          className="object-cover object-center"
+        />
+
+        {/* Ambient Dark Gradient Overlay for Contrast */}
+        <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/45 to-black/30 backdrop-blur-[0.5px]" />
+
+        {/* Top Branding */}
+        <div className="relative z-10">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-3 rounded-xl  px-4 py-2.5   border border-white/15 transition hover:bg-black/40"
+          >
+            <span className="flex size-9 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm">
+              <Building2 className="size-5" />
+            </span>
           </Link>
-          {/* <ModeToggle /> */}
         </div>
 
-        <div className="rounded-2xl border border-border bg-card p-7 shadow-[0_30px_80px_rgba(48,73,68,.1)]">
-          <div className="mb-6 text-center">
-            <div className="mb-2 grid size-11 mx-auto place-items-center rounded-xl bg-accent text-accent-foreground">
-              <LockKeyhole size={20} />
-            </div>
-            <p className="text-[.68rem] font-bold tracking-[.12em] text-brand uppercase">
-              Admin portal
-            </p>
-            <h1 className="mt-1 text-2xl font-bold tracking-tight text-foreground">
-              Welcome back
+        {/* Bottom Highlights & Testimonial Card */}
+        <div className="relative z-10 max-w-lg space-y-4">
+           
+
+          <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
+            A welcoming desk for every guest and team.
+          </h2>
+
+          <p className="text-sm leading-relaxed text-white/80">
+            Streamline your lobby operations, notify hosts instantly on arrival,
+            and maintain comprehensive, audit-ready compliance across all your sites.
+          </p>
+
+           
+        </div>
+      </div>
+
+      {/* RIGHT COLUMN: Sign In Form */}
+      <div className="flex w-full lg:w-1/2 flex-col justify-between p-6 sm:p-10 lg:p-16 min-h-screen overflow-y-auto">
+        {/* Top Header Navigation */}
+        <div className="flex items-center justify-between">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground transition hover:text-foreground"
+          >
+            <ArrowLeft className="size-3.5" /> Back to website
+          </Link>
+        </div>
+
+        {/* Centered Form Area */}
+        <div className="mx-auto my-auto w-full max-w-md py-8">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+              Sign In
             </h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Sign in to manage your visitor desk.
+            <p className="mt-2 text-sm text-muted-foreground">
+              Enter your email below to login to your account
             </p>
           </div>
 
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Email Field */}
             <div>
-              <label className="mb-2 block text-xs font-bold text-foreground/80" htmlFor="email">
-                Email address
+              <label
+                htmlFor="email"
+                className="block text-xs font-bold uppercase tracking-wider text-foreground/80 mb-2"
+              >
+                Username or Email
               </label>
-              <div className="flex min-h-12 items-center gap-2.5 rounded-xl border border-input bg-background px-4 transition focus-within:border-ring focus-within:ring-4 focus-within:ring-ring/20">
-                <Mail size={18} className="text-muted-foreground" />
+              <div className="flex min-h-11 items-center gap-2.5 rounded-xl border border-input bg-card px-3.5 transition focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/20">
+                <Mail className="size-4 text-muted-foreground shrink-0" />
                 <input
-                  className="min-w-0 flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
                   id="email"
                   type="email"
                   autoComplete="email"
-                  placeholder="you@company.com"
+                  placeholder="Enter username or email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  className="min-w-0 flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground/60"
                 />
               </div>
             </div>
 
-            <div className="mt-4">
-              <label className="mb-2 block text-xs font-bold text-foreground/80" htmlFor="password">
-                Password
-              </label>
-              <div className="flex min-h-12 items-center gap-2.5 rounded-xl border border-input bg-background px-4 transition focus-within:border-ring focus-within:ring-4 focus-within:ring-ring/20">
-                <LockKeyhole size={18} className="text-muted-foreground" />
+            {/* Password Field with Forgot Password Link */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label
+                  htmlFor="password"
+                  className="block text-xs font-bold uppercase tracking-wider text-foreground/80"
+                >
+                  Password
+                </label>
+                <Link
+                  href="/auth/forgot-password"
+                  className="text-xs font-medium text-brand hover:underline"
+                >
+                  Forgot your password?
+                </Link>
+              </div>
+              <div className="flex min-h-11 items-center gap-2.5 rounded-xl border border-input bg-card px-3.5 transition focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/20">
+                <LockKeyhole className="size-4 text-muted-foreground shrink-0" />
                 <input
-                  className="min-w-0 flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
                   id="password"
                   type={showPassword ? "text" : "password"}
                   autoComplete="current-password"
-                  placeholder="Enter your password"
+                  placeholder="Enter password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  className="min-w-0 flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground/60"
                 />
                 <button
                   type="button"
-                  className="grid size-8 place-items-center rounded-lg text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                   onClick={() => setShowPassword(!showPassword)}
                   aria-label={showPassword ? "Hide password" : "Show password"}
+                  className="grid size-7 place-items-center rounded-md text-muted-foreground hover:bg-accent hover:text-accent-foreground transition"
                 >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  {showPassword ? (
+                    <EyeOff className="size-4" />
+                  ) : (
+                    <Eye className="size-4" />
+                  )}
                 </button>
               </div>
             </div>
 
-            <div className="flex items-center justify-between pt-2">
-              <div className="min-h-7 text-xs text-destructive" aria-live="polite">
+            {/* Error Message */}
+            {visibleErrorMessage && (
+              <div
+                className="rounded-lg bg-destructive/10 p-3 text-xs font-medium text-destructive"
+                aria-live="polite"
+              >
                 {visibleErrorMessage}
               </div>
-              <Link href="/auth/forgot-password" className="text-xs font-medium text-brand hover:underline whitespace-nowrap">
-                Forgot password?
-              </Link>
-            </div>
+            )}
 
+            {/* Primary Log In Button */}
             <button
               type="submit"
               disabled={isLoading}
-              className="flex min-h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-primary text-sm font-bold text-primary-foreground transition hover:not-disabled:-translate-y-0.5 hover:not-disabled:bg-primary/90 disabled:cursor-wait disabled:opacity-70"
+              className="mt-2 flex min-h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-primary text-sm font-bold text-primary-foreground shadow-sm transition hover:not-disabled:bg-primary/90 hover:not-disabled:-translate-y-0.5 active:translate-y-0 disabled:cursor-wait disabled:opacity-70"
             >
               {isLoading ? (
                 <>
-                  <span className="size-4 animate-spin rounded-full border-2 border-white/35 border-t-white" />
-                  Signing in...
+                  <span className="size-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+                  Logging in...
                 </>
               ) : (
                 <>
-                  Sign in <ArrowRight size={18} />
+                  Log In <ArrowRight className="size-4" />
                 </>
               )}
             </button>
           </form>
 
-          <div className="my-5 flex items-center gap-3">
-            <div className="h-px flex-1 bg-border" />
-            <span className="text-xs text-muted-foreground">or</span>
-            <div className="h-px flex-1 bg-border" />
+          {/* OR Divider */}
+          <div className="relative my-6 text-center text-xs after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
+            <span className="relative z-10 bg-background px-3 font-bold uppercase tracking-wider text-muted-foreground">
+              OR
+            </span>
           </div>
 
+          {/* Google OAuth Button */}
           <button
             type="button"
             onClick={handleGoogleLogin}
-            className="flex min-h-12 w-full items-center justify-center gap-3 rounded-xl border border-border bg-card text-sm font-semibold text-foreground transition hover:-translate-y-0.5 hover:border-ring hover:shadow-md"
+            className="flex min-h-11 w-full items-center justify-center gap-3 rounded-xl border border-input bg-card text-sm font-semibold text-foreground shadow-xs transition hover:bg-accent hover:border-ring hover:-translate-y-0.5"
           >
-            <svg className="size-5" viewBox="0 0 24 24">
+            <svg className="size-4.5" viewBox="0 0 24 24">
               <path
                 fill="#4285F4"
                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -212,15 +281,24 @@ function LoginForm() {
             Continue with Google
           </button>
 
-          <p className="mt-5 text-center text-sm text-muted-foreground">
+          {/* Switch Link */}
+          <p className="mt-8 text-center text-sm text-muted-foreground">
             Don&rsquo;t have an account?{" "}
-            <Link href="/auth/register" className="font-semibold text-brand hover:underline">
-              Create organization
+            <Link
+              href="/auth/register"
+              className="font-semibold text-brand hover:underline"
+            >
+              Sign up
             </Link>
           </p>
         </div>
+
+        {/* Footer info */}
+        <p className="text-center text-xs text-muted-foreground/75">
+          &copy; {new Date().getFullYear()} Visitor Log. All rights reserved.
+        </p>
       </div>
-    </main>
+    </div>
   );
 }
 
