@@ -11,6 +11,7 @@ import {
 import User from "@/lib/models/user.model";
 import Organization from "@/lib/models/organization.model";
 import Membership from "@/lib/models/membership.model";
+import { sendEmail, userWelcomeRegistrationEmail } from "@/lib/notifications/email";
 
 function getSafeRedirect(value: string | null) {
   if (!value || !value.startsWith("/") || value.startsWith("//")) {
@@ -92,6 +93,23 @@ export async function GET(request: NextRequest) {
         role: "owner",
         status: "active",
         joinedAt: new Date(),
+      });
+
+      // Send welcome email asynchronously
+      const appUrl = (process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000").replace(/\/$/, "");
+      const welcomeEmail = userWelcomeRegistrationEmail({
+        userName: user.name,
+        organizationName: organization.name,
+        email: user.email,
+        loginUrl: `${appUrl}/auth/login`,
+      });
+
+      sendEmail({
+        to: user.email,
+        subject: welcomeEmail.subject,
+        html: welcomeEmail.html,
+      }).catch((err) => {
+        console.error("Failed to send Google OAuth welcome email:", err);
       });
     }
 

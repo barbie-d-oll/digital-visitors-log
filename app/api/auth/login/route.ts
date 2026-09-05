@@ -12,6 +12,7 @@ import {
 } from "@/lib/auth/jwt";
 import { getIsDepartmentHead } from "@/lib/auth/department-head";
 import { logEvent } from "@/lib/audit";
+import { sendEmail, userFirstLoginNotificationEmail } from "@/lib/notifications/email";
 
 type LoginPayload = {
   email: string;
@@ -69,8 +70,32 @@ export async function POST(request: Request) {
       );
     }
 
+    // Check if this is the user's first login
+    const isFirstLogin = !user.lastLogin;
+
     // Update last login
-    await User.updateOne({ _id: user._id }, { lastLogin: new Date() });
+    const loginTime = new Date();
+    await User.updateOne({ _id: user._id }, { lastLogin: loginTime });
+
+    // Send first login email notification asynchronously
+    if (isFirstLogin) {
+      const appUrl = (process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000").replace(/\/$/, "");
+      const firstLoginEmail = userFirstLoginNotificationEmail({
+        userName: user.name,
+        organizationName: organization.name,
+        email: user.email,
+        loginTime,
+        dashboardUrl: `${appUrl}/dashboard`,
+      });
+
+      sendEmail({
+        to: user.email,
+        subject: firstLoginEmail.subject,
+        html: firstLoginEmail.html,
+      }).catch((err) => {
+        console.error("Failed to send first login notification email:", err);
+      });
+    }
 
     // Generate session tokens
     const tokenPayload = {
@@ -86,6 +111,7 @@ export async function POST(request: Request) {
 
     const response = NextResponse.json({
       ok: true,
+      isFirstLogin,
       user: {
         id: user._id,
         name: user.name,
@@ -113,7 +139,8 @@ export async function POST(request: Request) {
       userId: user._id.toString(),
       userName: user.name,
       organizationId: organization._id.toString(),
-    }).catch(() => {});
+      metadata: { role: user.role, isFirstLogin },
+    });
 
     return response;
   } catch (error) {

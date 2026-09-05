@@ -59,7 +59,14 @@ function LoginForm() {
       const result = await login(email, password);
 
       if (result.ok) {
-        toast.success("Login successful. Redirecting...");
+        if (result.isFirstLogin) {
+          toast.success("Welcome aboard! 🎉", {
+            description: "Your workspace is ready. We've sent a welcome guide to your email.",
+            duration: 6000,
+          });
+        } else {
+          toast.success("Login successful. Redirecting...");
+        }
         router.replace(redirect);
       } else {
         const message = result.error || "Login failed.";

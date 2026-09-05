@@ -32,7 +32,7 @@ export type UserProfile = {
 type AuthContextType = {
   user: UserProfile | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<{ ok: boolean; error?: string }>;
+  login: (email: string, password: string) => Promise<{ ok: boolean; error?: string; isFirstLogin?: boolean }>;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
 };
@@ -150,7 +150,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       setUser(data.user);
-      return { ok: true };
+      return { ok: true, isFirstLogin: data.isFirstLogin };
     } catch {
       return { ok: false, error: "Network error. Please try again." };
     }

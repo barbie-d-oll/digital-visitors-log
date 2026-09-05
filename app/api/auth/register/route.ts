@@ -5,6 +5,7 @@ import Organization from "@/lib/models/organization.model";
 import User from "@/lib/models/user.model";
 import Membership from "@/lib/models/membership.model";
 import { hashPassword } from "@/lib/auth/password";
+import { sendEmail, userWelcomeRegistrationEmail } from "@/lib/notifications/email";
 
 type RegisterPayload = {
   name: string;
@@ -86,6 +87,23 @@ export async function POST(request: Request) {
       role: "owner",
       status: "active",
       joinedAt: new Date(),
+    });
+
+    // Send welcome email asynchronously
+    const appUrl = (process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000").replace(/\/$/, "");
+    const welcomeEmail = userWelcomeRegistrationEmail({
+      userName: user.name,
+      organizationName: organization.name,
+      email: user.email,
+      loginUrl: `${appUrl}/auth/login`,
+    });
+
+    sendEmail({
+      to: user.email,
+      subject: welcomeEmail.subject,
+      html: welcomeEmail.html,
+    }).catch((err) => {
+      console.error("Failed to send welcome registration email:", err);
     });
 
     return NextResponse.json(

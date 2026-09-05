@@ -413,3 +413,142 @@ export function staffWelcomeEmail({
     `,
   };
 }
+
+export function userWelcomeRegistrationEmail({
+  userName,
+  organizationName,
+  email,
+  loginUrl,
+}: {
+  userName: string;
+  organizationName: string;
+  email: string;
+  loginUrl: string;
+}): { subject: string; html: string } {
+  return {
+    subject: `🎉 Welcome to Visitor Log — ${organizationName} is ready`,
+    html: `
+      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 560px; margin: 0 auto; padding: 32px 24px;">
+        <div style="border: 1px solid #e5e7eb; border-radius: 16px; padding: 32px; background: #ffffff;">
+          <p style="margin: 0 0 8px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #1b6b61;">
+            Getting Started
+          </p>
+          <h1 style="margin: 0 0 16px; font-size: 24px; font-weight: 700; color: #111827;">
+            Welcome to Visitor Log!
+          </h1>
+          <p style="margin: 0 0 20px; font-size: 15px; color: #4b5563; line-height: 1.6;">
+            Hi ${userName}, thank you for registering <strong>${organizationName}</strong>. Your modern reception and visitor management desk is ready for action.
+          </p>
+
+          <div style="background: #f9fafb; border: 1px solid #f3f4f6; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+            <table style="width: 100%; border-collapse: collapse;">
+              <tr>
+                <td style="padding: 6px 0; font-size: 13px; color: #6b7280; width: 130px;">Organization</td>
+                <td style="padding: 6px 0; font-size: 13px; font-weight: 700; color: #111827;">${organizationName}</td>
+              </tr>
+              <tr>
+                <td style="padding: 6px 0; font-size: 13px; color: #6b7280;">Account Email</td>
+                <td style="padding: 6px 0; font-size: 13px; font-weight: 700; color: #111827;">${email}</td>
+              </tr>
+              <tr>
+                <td style="padding: 6px 0; font-size: 13px; color: #6b7280;">Status</td>
+                <td style="padding: 6px 0; font-size: 13px; font-weight: 700; color: #16a34a;">Active</td>
+              </tr>
+            </table>
+          </div>
+
+          <div style="margin-bottom: 28px;">
+            <p style="margin: 0 0 10px; font-size: 14px; font-weight: 600; color: #111827;">
+              Recommended next steps:
+            </p>
+            <ul style="margin: 0; padding-left: 20px; font-size: 14px; color: #4b5563; line-height: 1.7;">
+              <li>Add your company departments and hosts.</li>
+              <li>Invite staff members to handle check-ins and appointments.</li>
+              <li>Customize your kiosk branding with your company logo and theme.</li>
+            </ul>
+          </div>
+
+          <a href="${loginUrl}" style="display: inline-block; padding: 14px 28px; background: #1b6b61; color: #ffffff; text-decoration: none; border-radius: 10px; font-weight: 700; font-size: 14px; margin-bottom: 18px;">
+            Sign In to Your Workspace
+          </a>
+
+          <p style="margin: 0; font-size: 13px; color: #9ca3af; line-height: 1.5;">
+            Need assistance? Reach out to your system administrator or reply to this email.
+          </p>
+        </div>
+
+        <p style="margin: 16px 0 0; text-align: center; font-size: 11px; color: #9ca3af;">
+          Sent by ${organizationName} via Visitor Log
+        </p>
+      </div>
+    `,
+  };
+}
+
+export function userFirstLoginNotificationEmail({
+  userName,
+  organizationName,
+  email,
+  loginTime,
+  dashboardUrl,
+}: {
+  userName: string;
+  organizationName: string;
+  email: string;
+  loginTime: Date;
+  dashboardUrl: string;
+}): { subject: string; html: string } {
+  const formattedTime = loginTime.toLocaleString("en-US", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
+
+  return {
+    subject: `🔐 First Login Detected — ${organizationName} on Visitor Log`,
+    html: `
+      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 560px; margin: 0 auto; padding: 32px 24px;">
+        <div style="border: 1px solid #e5e7eb; border-radius: 16px; padding: 32px; background: #ffffff;">
+          <p style="margin: 0 0 8px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #1b6b61;">
+            Security & Welcome Notice
+          </p>
+          <h1 style="margin: 0 0 16px; font-size: 24px; font-weight: 700; color: #111827;">
+            First sign-in to your desk
+          </h1>
+          <p style="margin: 0 0 20px; font-size: 15px; color: #4b5563; line-height: 1.6;">
+            Hi ${userName}, you have successfully signed in to <strong>${organizationName}</strong> for the first time.
+          </p>
+
+          <div style="background: #f9fafb; border: 1px solid #f3f4f6; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+            <table style="width: 100%; border-collapse: collapse;">
+              <tr>
+                <td style="padding: 6px 0; font-size: 13px; color: #6b7280; width: 130px;">Time of Login</td>
+                <td style="padding: 6px 0; font-size: 13px; font-weight: 700; color: #111827;">${formattedTime}</td>
+              </tr>
+              <tr>
+                <td style="padding: 6px 0; font-size: 13px; color: #6b7280;">Account Email</td>
+                <td style="padding: 6px 0; font-size: 13px; font-weight: 700; color: #111827;">${email}</td>
+              </tr>
+              <tr>
+                <td style="padding: 6px 0; font-size: 13px; color: #6b7280;">Organization</td>
+                <td style="padding: 6px 0; font-size: 13px; font-weight: 700; color: #111827;">${organizationName}</td>
+              </tr>
+            </table>
+          </div>
+
+          <a href="${dashboardUrl}" style="display: inline-block; padding: 14px 28px; background: #1b6b61; color: #ffffff; text-decoration: none; border-radius: 10px; font-weight: 700; font-size: 14px; margin-bottom: 18px;">
+            Open Reception Dashboard
+          </a>
+
+          <p style="margin: 0; font-size: 13px; color: #9ca3af; line-height: 1.5;">
+            If you did not initiate this login, please contact your administrator or reset your password immediately.
+          </p>
+        </div>
+
+        <p style="margin: 16px 0 0; text-align: center; font-size: 11px; color: #9ca3af;">
+          Sent by ${organizationName} via Visitor Log
+        </p>
+      </div>
+    `,
+  };
+}
+
