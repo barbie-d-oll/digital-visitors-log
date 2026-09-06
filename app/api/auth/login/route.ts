@@ -139,7 +139,7 @@ export async function POST(request: Request) {
       userId: user._id.toString(),
       userName: user.name,
       organizationId: organization._id.toString(),
-      metadata: { role: user.role, isFirstLogin },
+      details: { role: user.role, isFirstLogin },
     });
 
     return response;
