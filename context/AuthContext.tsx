@@ -27,6 +27,7 @@ export type UserProfile = {
   customBranding?: boolean;
   plan?: string;
   isDepartmentHead?: boolean;
+  hasCompletedTour?: boolean;
 };
 
 type AuthContextType = {
@@ -35,6 +36,7 @@ type AuthContextType = {
   login: (email: string, password: string) => Promise<{ ok: boolean; error?: string; isFirstLogin?: boolean }>;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
+  markTourCompleted: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType>({
@@ -43,6 +45,7 @@ const AuthContext = createContext<AuthContextType>({
   login: async () => ({ ok: false }),
   logout: async () => {},
   refresh: async () => {},
+  markTourCompleted: async () => {},
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -170,8 +173,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await fetchUser();
   };
 
+  const markTourCompleted = async () => {
+    setUser((prev) => (prev ? { ...prev, hasCompletedTour: true } : null));
+    try {
+      await fetch("/api/user/complete-tour", { method: "POST" });
+    } catch (error) {
+      console.error("Failed to update tour status:", error);
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, refresh }}>
+    <AuthContext.Provider
+      value={{ user, loading, login, logout, refresh, markTourCompleted }}
+    >
       {children}
     </AuthContext.Provider>
   );

@@ -149,7 +149,7 @@ export default function DashboardPage() {
         </p>
       </div>
 
-      <section className="rounded-xl border border-border bg-card p-6 shadow-enterprise-sm">
+      <section id="tour-overview" className="rounded-xl border border-border bg-card p-6 shadow-enterprise-sm">
         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div className="min-w-0">
             <p className="text-sm font-medium text-brand">
@@ -175,7 +175,7 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
+      <div id="tour-stats" className="grid gap-6 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
         <StatCard title="Total Visitors" value={visitors.length} />
         <StatCard
           title="Checked In"
@@ -192,7 +192,7 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-6">
-        <div className="rounded-xl border border-border bg-card p-6 shadow xl:col-span-2">
+        <div id="tour-chart" className="rounded-xl border border-border bg-card p-6 shadow xl:col-span-2">
           <h3 className="mb-4 text-lg font-semibold">Visitor Check-ins</h3>
           <VisitorChart visitors={visitors} />
         </div>

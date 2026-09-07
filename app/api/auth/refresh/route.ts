@@ -84,6 +84,7 @@ async function getFreshSession(refreshToken: string | null) {
       customBranding: organization.settings?.customBranding || false,
       plan: organization.plan,
       isDepartmentHead,
+      hasCompletedTour: user.hasCompletedTour ?? false,
     },
   };
 }

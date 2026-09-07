@@ -11,6 +11,7 @@ export interface IUser extends Document {
   authProvider: "credentials" | "google";
   status: "active" | "inactive";
   lastLogin?: Date;
+  hasCompletedTour?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -43,6 +44,7 @@ const UserSchema = new Schema<IUser>(
       default: "active",
     },
     lastLogin: { type: Date },
+    hasCompletedTour: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

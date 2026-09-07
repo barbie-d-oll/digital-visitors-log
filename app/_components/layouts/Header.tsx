@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { Bell, ChevronDown, LogOut, Menu, UserRound } from "lucide-react";
+import { Bell, ChevronDown, Compass, LogOut, Menu, UserRound } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import FullscreenButton from "@/components/common/Fullscreen";
 import { Button } from "@/components/ui/button";
+import { triggerDashboardTour } from "@/app/dashboard/_components/DashboardTour";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -51,6 +52,17 @@ export default function Header({ setSidebarOpen, user }: HeaderProps) {
         <div className="hidden md:block" aria-hidden="true" />
 
         <div className="ml-auto flex items-center gap-4">
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={() => triggerDashboardTour()}
+            className="text-muted-foreground hover:text-foreground"
+            title="Take a quick tour"
+            aria-label="Take a quick tour"
+          >
+            <Compass className="size-5" />
+          </Button>
           <FullscreenButton />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -124,6 +136,14 @@ export default function Header({ setSidebarOpen, user }: HeaderProps) {
                 </span>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onSelect={() => {
+                  triggerDashboardTour();
+                }}
+              >
+                <Compass className="size-4" />
+                Quick tour
+              </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <Link href="/dashboard/profile/edit">
                   <UserRound className="size-4" />

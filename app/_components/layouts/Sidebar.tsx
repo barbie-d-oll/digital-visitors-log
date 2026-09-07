@@ -53,6 +53,7 @@ type NavItem = {
   href: string;
   icon: ComponentType<{ className?: string }>;
   departmentHeadsOnly?: boolean;
+  tourId?: string;
 };
 
 const navGroups: Array<{ label: string; items: NavItem[] }> = [
@@ -64,12 +65,14 @@ const navGroups: Array<{ label: string; items: NavItem[] }> = [
         description: "Overview and insights",
         href: "/dashboard",
         icon: Home,
+        tourId: "tour-nav-dashboard",
       },
       {
         name: "Visitors",
         description: "Visitor records",
         href: "/dashboard/visitor",
         icon: UserCheck,
+        tourId: "tour-nav-visitors",
       },
       {
         name: "Assignments",
@@ -83,18 +86,21 @@ const navGroups: Array<{ label: string; items: NavItem[] }> = [
         description: "Pre-registrations",
         href: "/dashboard/appointments",
         icon: Calendar,
+        tourId: "tour-nav-appointments",
       },
       {
         name: "Staff",
         description: "Hosts and employees",
         href: "/dashboard/staff",
         icon: Users,
+        tourId: "tour-nav-staff",
       },
       {
         name: "Departments",
         description: "Teams and heads",
         href: "/dashboard/departments",
         icon: Layers,
+        tourId: "tour-nav-departments",
       },
     ],
   },
@@ -141,6 +147,7 @@ const navGroups: Array<{ label: string; items: NavItem[] }> = [
         description: "Reception setup",
         href: "/dashboard/kiosk",
         icon: ScanLine,
+        tourId: "tour-nav-kiosk",
       },
       {
         name: "Audit Log",
@@ -153,6 +160,7 @@ const navGroups: Array<{ label: string; items: NavItem[] }> = [
         description: "Workspace preferences",
         href: "/dashboard/settings",
         icon: Settings,
+        tourId: "tour-nav-settings",
       },
     ],
   },
@@ -176,7 +184,7 @@ function SidebarContent({
 
   return (
     <>
-      <div className="flex h-[4.5rem]  items-center gap-3 border-b border-sidebar-border px-4 overflow-hidden sm:px-6 lg:px-8 ">
+      <div className="flex h-[4.5rem] items-center gap-3 border-b border-sidebar-border px-4 overflow-hidden sm:px-6 lg:px-8">
         <Link
           href="/dashboard"
           onClick={() => setSidebarOpen(false)}
@@ -256,55 +264,57 @@ function SidebarContent({
                       !item.departmentHeadsOnly || user?.isDepartmentHead,
                   )
                   .map((item) => {
-                  const Icon = item.icon;
-                  const active = isActive(item.href);
+                    const Icon = item.icon;
+                    const active = isActive(item.href);
 
-                  return (
-                    <Link
-                      key={item.name}
-                      href={item.href}
-                      title={compact ? item.name : undefined}
-                      onClick={() => setSidebarOpen(false)}
-                      aria-current={active ? "page" : undefined}
-                      className={cn(
-                        "group flex min-h-16 items-center gap-4 rounded-lg px-4 py-1 outline-none transition focus-visible:ring-3 focus-visible:ring-ring/30",
-                        active
-                          ? "bg-primary text-sidebar-primary-foreground"
-                          : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-                        compact && "min-h-12 justify-center px-0",
-                      )}
-                    >
-                      <Icon
+                    return (
+                      <Link
+                        key={item.name}
+                        id={mode === "desktop" ? item.tourId : undefined}
+                        data-tour={item.tourId}
+                        href={item.href}
+                        title={compact ? item.name : undefined}
+                        onClick={() => setSidebarOpen(false)}
+                        aria-current={active ? "page" : undefined}
                         className={cn(
-                          "size-6 shrink-0",
+                          "group flex min-h-16 items-center gap-4 rounded-lg px-4 py-1 outline-none transition focus-visible:ring-3 focus-visible:ring-ring/30",
                           active
-                            ? "text-sidebar-primary-foreground"
-                            : "text-sidebar-foreground/65 group-hover:text-sidebar-accent-foreground",
-                        )}
-                      />
-                      <span
-                        className={cn(
-                          "min-w-0 transition-opacity",
-                          compact && "hidden",
+                            ? "bg-primary text-sidebar-primary-foreground"
+                            : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                          compact && "min-h-12 justify-center px-0",
                         )}
                       >
-                        <span className="block truncate text-base font-semibold">
-                          {item.name}
-                        </span>
+                        <Icon
+                          className={cn(
+                            "size-6 shrink-0",
+                            active
+                              ? "text-sidebar-primary-foreground"
+                              : "text-sidebar-foreground/65 group-hover:text-sidebar-accent-foreground",
+                          )}
+                        />
                         <span
                           className={cn(
-                            "mt-0.5 block truncate text-sm",
-                            active
-                              ? "text-sidebar-primary-foreground/90"
-                              : "text-sidebar-foreground/65",
+                            "min-w-0 transition-opacity",
+                            compact && "hidden",
                           )}
                         >
-                          {item.description}
+                          <span className="block truncate text-base font-semibold">
+                            {item.name}
+                          </span>
+                          <span
+                            className={cn(
+                              "mt-0.5 block truncate text-sm",
+                              active
+                                ? "text-sidebar-primary-foreground/90"
+                                : "text-sidebar-foreground/65",
+                            )}
+                          >
+                            {item.description}
+                          </span>
                         </span>
-                      </span>
-                    </Link>
-                  );
-                })}
+                      </Link>
+                    );
+                  })}
               </div>
             </div>
           ))}
@@ -374,7 +384,7 @@ export default function Sidebar(props: SidebarProps) {
 
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex w-80 h-full flex-col border-r border-sidebar-border   text-sidebar-foreground transition-transform duration-300 ease-out md:hidden",
+          "fixed inset-y-0 left-0 z-50 flex w-80 h-full flex-col border-r border-sidebar-border text-sidebar-foreground transition-transform duration-300 ease-out md:hidden",
           props.sidebarOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >
@@ -383,7 +393,7 @@ export default function Sidebar(props: SidebarProps) {
 
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-30 hidden h-screen shrink-0 flex-col border-r border-sidebar-border   text-sidebar-foreground transition-[width] duration-300 ease-out md:flex",
+          "fixed inset-y-0 left-0 z-30 hidden h-screen shrink-0 flex-col border-r border-sidebar-border text-sidebar-foreground transition-[width] duration-300 ease-out md:flex",
           props.collapsed ? "w-20" : "w-80",
         )}
       >

@@ -5,6 +5,7 @@ import { useState } from "react";
 
 import Header from "../_components/layouts/Header";
 import Sidebar from "../_components/layouts/Sidebar";
+import DashboardTour from "./_components/DashboardTour";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
 
@@ -49,6 +50,8 @@ export default function DashboardLayout({
           <div className="mx-auto w-full max-w-7xl min-w-0">{children}</div>
         </main>
       </div>
+
+      <DashboardTour />
     </div>
   );
 }

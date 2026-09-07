@@ -47,6 +47,7 @@ export async function GET() {
         customBranding: organization?.settings?.customBranding || false,
         plan: organization?.plan ?? "free",
         isDepartmentHead,
+        hasCompletedTour: user.hasCompletedTour ?? false,
       },
     });
   } catch (error) {

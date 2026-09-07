@@ -1,8 +1,8 @@
-import { v2 as cloudinary, UploadApiResponse, UploadApiOptions } from "cloudinary";
+import { v2 as cloudinary, UploadApiResponse, UploadApiOptions, ConfigOptions } from "cloudinary";
 
 // Configure Cloudinary: use individual env variables if provided,
 // otherwise preserve auto-configuration from CLOUDINARY_URL without overriding with undefined.
-const configOptions: Record<string, any> = {
+const configOptions: ConfigOptions = {
   secure: true,
 };
 

@@ -125,6 +125,7 @@ export async function POST(request: Request) {
         plan: organization.plan,
         avatar: user.avatar,
         isDepartmentHead,
+        hasCompletedTour: user.hasCompletedTour ?? false,
       },
     });
 
