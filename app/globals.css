@@ -64,14 +64,14 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #183b38;
+  --foreground: #000000;
   --card: #fffefb;
   --card-foreground: #183b38;
   --popover: #fffefb;
   --popover-foreground: #183b38;
   --surface: #f6fbf8;
   --surface-muted: #f8fcfa;
-  --primary: #8FD9FB;
+  --primary:  #0A6ABC;
   --primary-foreground: #ffffff;
   --secondary: #f6fbf8;
   --secondary-foreground: #1b6b61;
@@ -124,7 +124,7 @@
   --popover-foreground: #f7fffc;
   --surface: #202124;
   --surface-muted: #242d2b;
-  --primary: #8FD9FB;
+  --primary: #0A6ABC;
   --primary-foreground: #071a18;
   --secondary: #202124;
   --secondary-foreground: #dff7f0;

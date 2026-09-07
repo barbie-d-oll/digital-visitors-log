@@ -48,7 +48,15 @@ const subscribeToFullscreen = (onStoreChange: () => void) => {
 const getFullscreenSnapshot = () => !!getFullscreenElement();
 const getServerFullscreenSnapshot = () => false;
 
-export default function FullScreenButton() {
+type FullscreenButtonProps = {
+  variant?: "outline" | "ghost" | "default";
+  className?: string;
+};
+
+export default function FullScreenButton({
+  variant = "ghost",
+  className,
+}: FullscreenButtonProps = {}) {
   const hasMounted = useSyncExternalStore(
     subscribeToHydration,
     getClientHydrationSnapshot,
@@ -91,7 +99,7 @@ export default function FullScreenButton() {
   };
 
   if (!hasMounted) {
-    return <div aria-hidden="true" className="size-8 shrink-0" />;
+    return <div aria-hidden="true" className="size-9 shrink-0" />;
   }
 
   return (
@@ -99,13 +107,15 @@ export default function FullScreenButton() {
       type="button"
       onClick={isFullscreen ? exitFullScreen : enterFullScreen}
       size="icon"
-      variant="outline"
+      variant={variant}
+      className={className}
+      title={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
       aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
     >
       {isFullscreen ? (
-        <Minimize className="size-4" />
+        <Minimize className="size-4.5" />
       ) : (
-        <Maximize className="size-4" />
+        <Maximize className="size-4.5" />
       )}
     </Button>
   );
