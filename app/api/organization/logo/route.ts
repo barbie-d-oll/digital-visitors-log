@@ -1,11 +1,9 @@
-import { randomUUID } from "crypto";
-import { mkdir, writeFile } from "fs/promises";
-import path from "path";
 import { NextRequest, NextResponse } from "next/server";
 
 import { getAuthUser } from "@/lib/auth/jwt";
 import { connectToDB } from "@/lib/db/mongoose";
 import Organization from "@/lib/models/organization.model";
+import { uploadToCloudinary } from "@/lib/cloudinary";
 
 export const runtime = "nodejs";
 
@@ -56,18 +54,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const fileName = `${authUser.organizationId}-${Date.now()}-${randomUUID()}.${extension}`;
-    const uploadDir = path.join(
-      process.cwd(),
-      "public",
-      "uploads",
-      "organization-logos",
-    );
-    const uploadPath = path.join(uploadDir, fileName);
-    const logoUrl = `/uploads/organization-logos/${fileName}`;
-
-    await mkdir(uploadDir, { recursive: true });
-    await writeFile(uploadPath, Buffer.from(await logo.arrayBuffer()));
+    const buffer = Buffer.from(await logo.arrayBuffer());
+    const uploadResult = await uploadToCloudinary(buffer, {
+      folder: "digital-visitors-log/organization-logos",
+      public_id: `${authUser.organizationId}-logo`,
+      overwrite: true,
+      invalidate: true,
+    });
+    const logoUrl = uploadResult.secure_url;
 
     await connectToDB();
     const organization = await Organization.findByIdAndUpdate(

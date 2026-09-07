@@ -1,11 +1,9 @@
-import { randomUUID } from "crypto";
-import { mkdir, writeFile } from "fs/promises";
-import path from "path";
 import { NextRequest, NextResponse } from "next/server";
 
 import { getAuthUser } from "@/lib/auth/jwt";
 import { connectToDB } from "@/lib/db/mongoose";
 import User from "@/lib/models/user.model";
+import { uploadToCloudinary } from "@/lib/cloudinary";
 
 export const runtime = "nodejs";
 
@@ -60,13 +58,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const fileName = `${authUser.userId}-${Date.now()}-${randomUUID()}.${extension}`;
-    const uploadDir = path.join(process.cwd(), "public", "uploads", "avatars");
-    const uploadPath = path.join(uploadDir, fileName);
-    const avatarUrl = `/uploads/avatars/${fileName}`;
-
-    await mkdir(uploadDir, { recursive: true });
-    await writeFile(uploadPath, Buffer.from(await avatar.arrayBuffer()));
+    const buffer = Buffer.from(await avatar.arrayBuffer());
+    const uploadResult = await uploadToCloudinary(buffer, {
+      folder: "digital-visitors-log/avatars",
+      public_id: `${authUser.userId}-avatar`,
+      overwrite: true,
+      invalidate: true,
+    });
+    const avatarUrl = uploadResult.secure_url;
 
     await User.updateOne(
       { _id: authUser.userId, organizationId: authUser.organizationId },
