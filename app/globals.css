@@ -64,17 +64,17 @@
 
 :root {
   --background: #ffffff;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --popover: #ffffff;
   --foreground: #000000;
-  --card: #fffefb;
-  --card-foreground: #183b38;
-  --popover: #fffefb;
-  --popover-foreground: #183b38;
+  --popover-foreground: #000000;
   --surface: #f6fbf8;
   --surface-muted: #f8fcfa;
   --primary:  #0A6ABC;
   --primary-foreground: #ffffff;
   --secondary: #f6fbf8;
-  --secondary-foreground: #1b6b61;
+  --secondary-foreground: #000000;
   --muted: #f6fbf8;
   --muted-foreground: #617773;
   --accent: #e4f1eb;
@@ -90,7 +90,7 @@
   --border: #d7dfdc;
   --input: #d7dfdc;
   --ring: #1b6b61;
-  --brand: #1b6b61;
+  --brand: #000000;
   --brand-foreground: #ffffff;
   --brand-gold: #FFC72C;
   --brand-blue: #2196f3;
@@ -106,13 +106,13 @@
   --shadow-large: 0 18px 42px rgba(15, 23, 42, 0.12);
   --shadow-overlay: 0 24px 64px rgba(15, 23, 42, 0.18);
   --sidebar: #fffefb;
-  --sidebar-foreground: #183b38;
-  --sidebar-primary: #1b6b61;
+  --sidebar-foreground: #000000;
+  --sidebar-primary: #000000;
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #e4f1eb;
-  --sidebar-accent-foreground: #1b6b61;
+  --sidebar-accent-foreground: #000000;
   --sidebar-border: #d7dfdc;
-  --sidebar-ring: #1b6b61;
+  --sidebar-ring: #000000;
 }
 
 .dark {
@@ -181,11 +181,11 @@
 }
 
 @layer utilities {
-  .shadow-enterprise-sm {
+  /* .shadow-enterprise-sm {
     box-shadow: var(--shadow-small);
-  }
+  } */
 
-  .shadow-enterprise-md {
+  /* .shadow-enterprise-md {
     box-shadow: var(--shadow-medium);
   }
 
@@ -195,7 +195,7 @@
 
   .shadow-enterprise-overlay {
     box-shadow: var(--shadow-overlay);
-  }
+  } */
 }
 
 @keyframes visitor-reveal {

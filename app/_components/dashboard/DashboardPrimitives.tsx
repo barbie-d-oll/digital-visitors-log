@@ -25,7 +25,7 @@ const toneStyles: Record<Tone, string> = {
 };
 
 export const fieldControlClassName =
-  "min-h-10 w-full rounded-lg border border-input bg-background px-3 text-sm text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:border-ring focus:ring-3 focus:ring-ring/20 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-input/20";
+  "min-h-10 w-full rounded-lg border border-input bg-background px-3 text-sm text-foreground outline-none transition placeholder:text-muted-foreground focus:border-ring focus:ring-3 focus:ring-ring/20 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-input/20";
 
 export const selectControlClassName = cn(
   fieldControlClassName,
@@ -79,7 +79,7 @@ export function DashboardPanel({
   return (
     <section
       className={cn(
-        "min-w-0 overflow-hidden rounded-lg border border-border bg-card text-card-foreground shadow-enterprise-sm",
+        "min-w-0 overflow-hidden rounded-lg border border-border bg-card text-card-foreground  ",
         className,
       )}
     >
@@ -255,7 +255,7 @@ export function ActionLink({
   return (
     <Link
       href={href}
-      className="group flex min-h-24 items-start gap-3 rounded-lg border border-border bg-card p-4 text-left shadow-enterprise-sm transition hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-enterprise-md focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/30"
+      className="group flex min-h-24 items-start gap-3 rounded-lg border border-border bg-card p-4 text-left  transition hover:-translate-y-0.5 hover:border-primary/30   focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/30"
     >
       <span
         className={cn(
@@ -288,7 +288,7 @@ export function TableFrame({
   return (
     <div
       className={cn(
-        "overflow-hidden rounded-lg border border-border bg-card shadow-enterprise-sm",
+        "overflow-hidden rounded-lg border border-border bg-card ",
         className,
       )}
     >

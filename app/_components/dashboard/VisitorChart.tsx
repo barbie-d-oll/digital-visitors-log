@@ -12,7 +12,7 @@ import {
   YAxis,
 } from "recharts";
 
-import { selectControlClassName } from "./DashboardPrimitives";
+import { SelectField } from "./DashboardPrimitives";
 
 const dayLabels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -128,18 +128,18 @@ export default function VisitorChart({ visitors }: VisitorChartProps) {
           </p>
         </div>
 
-        <select
+        <SelectField
           value={type}
           onChange={(event) => setType(event.target.value as ActivityType)}
-          className={selectControlClassName}
           aria-label="Activity type"
+          className="w-auto min-w-[130px]"
         >
           <option value="checkins">Check-ins</option>
           <option value="checkouts">Check-outs</option>
-        </select>
+        </SelectField>
       </div>
 
-      <div className="h-72 w-full md:h-80 rounded-3xl border border-border bg-card/80 p-4 shadow-xl">
+      <div className="h-72 w-full md:h-80 rounded-3xl border border-border bg-card p-4">
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart
             data={data}
@@ -212,9 +212,9 @@ export default function VisitorChart({ visitors }: VisitorChartProps) {
         {summaries.map((summary) => (
           <div
             key={summary.label}
-            className="rounded-3xl border border-border bg-surface-muted/70 p-4 shadow-sm backdrop-blur"
+            className="rounded-3xl border border-border  p-4   backdrop-blur"
           >
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+            <p className="text-xs font-medium uppercase text-foreground">
               {summary.label}
             </p>
             <p className="mt-3 text-2xl font-semibold text-foreground">

@@ -93,6 +93,7 @@ export default function DashboardPage() {
   const { user } = useAuth();
   const [visitors, setVisitors] = useState<Visitor[]>([]);
   const [filters, setFilters] = useState<VisitorFilters>(emptyFilters);
+  const [showFilters, setShowFilters] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const filteredVisitors = useMemo(
@@ -134,7 +135,10 @@ export default function DashboardPage() {
     setFilters((current) => ({ ...current, [field]: value }));
   };
 
-  const clearFilters = () => setFilters(emptyFilters);
+  const clearFilters = () => {
+    setFilters(emptyFilters);
+    setShowFilters(false);
+  };
 
   return (
     <div className="space-y-6 md:space-y-8">
@@ -149,7 +153,7 @@ export default function DashboardPage() {
         </p>
       </div>
 
-      <section id="tour-overview" className="rounded-xl border border-border bg-card p-6 shadow-enterprise-sm">
+      <section id="tour-overview" className="rounded-xl border border-border bg-card p-6">
         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div className="min-w-0">
             <p className="text-sm font-medium text-brand">
@@ -167,7 +171,7 @@ export default function DashboardPage() {
           <div className="flex flex-wrap gap-3">
             <Link
               href="/dashboard/report"
-              className="rounded-lg border border-border px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-accent hover:text-accent-foreground"
+              className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground transition hover:bg-accent hover:text-accent-foreground"
             >
               View Reports
             </Link>
@@ -192,68 +196,98 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-6">
-        <div id="tour-chart" className="rounded-xl border border-border bg-card p-6 shadow xl:col-span-2">
+        <div id="tour-chart" className="rounded-xl border border-border bg-card p-6 col-span-2">
           <h3 className="mb-4 text-lg font-semibold">Visitor Check-ins</h3>
           <VisitorChart visitors={visitors} />
         </div>
       </div>
 
-      <section className="rounded-xl border border-border bg-card p-6 shadow">
-        <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+
+
+      <section className="rounded-xl border border-border bg-card p-6">
+        <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h3 className="text-lg font-semibold">Filter Visitors</h3>
+            <h3 className="text-lg font-semibold">Recent Visitors</h3>
             <p className="text-sm text-muted-foreground">
               Showing {filteredVisitors.length} of {visitors.length} visitor records.
             </p>
           </div>
-          <button
-            type="button"
-            onClick={clearFilters}
-            disabled={!hasActiveFilters}
-            className="w-fit rounded-lg border border-border px-4 py-2 text-sm font-semibold text-foreground transition hover:bg-accent hover:text-accent-foreground disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            Clear filters
-          </button>
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-3">
-          <label className="block">
-            <span className="mb-2 block text-sm font-semibold text-foreground">Search visitor</span>
-            <input
-              type="search"
-              value={filters.search}
-              onChange={(e) => updateFilter("search", e.target.value)}
-              placeholder="Name, company, phone, code..."
-              className="min-h-11 w-full rounded-lg border border-input bg-background px-4 text-sm text-foreground outline-none transition placeholder:text-muted-foreground focus:border-ring focus:ring-4 focus:ring-ring/20"
-            />
-          </label>
-          <label className="block">
-            <span className="mb-2 block text-sm font-semibold text-foreground">Filter by date</span>
-            <input
-              type="date"
-              value={filters.date}
-              onChange={(e) => updateFilter("date", e.target.value)}
-              className="min-h-11 w-full rounded-lg border border-input bg-background px-4 text-sm text-foreground outline-none transition focus:border-ring focus:ring-4 focus:ring-ring/20"
-            />
-          </label>
-          <label className="block">
-            <span className="mb-2 block text-sm font-semibold text-foreground">Filter by day</span>
-            <select
-              value={filters.day}
-              onChange={(e) => updateFilter("day", e.target.value)}
-              className="min-h-11 w-full rounded-lg border border-input bg-background px-4 text-sm text-foreground outline-none transition focus:border-ring focus:ring-4 focus:ring-ring/20"
+          <div className="flex flex-wrap items-center gap-2">
+            {hasActiveFilters && (
+              <button
+                type="button"
+                onClick={clearFilters}
+                className="rounded-lg border border-border px-3 py-1.5 text-sm font-semibold text-foreground transition hover:bg-accent hover:text-accent-foreground"
+              >
+                Clear filters
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => setShowFilters((prev) => !prev)}
+              className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-sm font-meduim text-foreground transition hover:bg-accent hover:text-accent-foreground"
             >
-              <option value="">All days</option>
-              {weekDays.map((day) => (
-                <option key={day.value} value={day.value}>{day.label}</option>
-              ))}
-            </select>
-          </label>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <line x1="4" y1="6" x2="20" y2="6" />
+                <line x1="8" y1="12" x2="16" y2="12" />
+                <line x1="11" y1="18" x2="13" y2="18" />
+              </svg>
+              {showFilters ? "Hide Filters" : "Show Filters"}
+              {hasActiveFilters && (
+                <span className="flex h-4 w-4 items-center justify-center rounded-full bg-brand text-[10px] font-bold text-white">
+                  {Object.values(filters).filter(Boolean).length}
+                </span>
+              )}
+            </button>
+          </div>
         </div>
-      </section>
 
-      <section className="rounded-xl border border-border bg-card p-6 shadow">
-        <h3 className="mb-4 text-lg font-semibold">Recent Visitors</h3>
+        {showFilters && (
+          <div className="mb-5 grid gap-4 rounded-lg border border-border bg-background/50 p-4 md:grid-cols-3">
+            <label className="block">
+              <span className="mb-2 block text-sm font-semibold text-foreground">Search visitor</span>
+              <input
+                type="search"
+                value={filters.search}
+                onChange={(e) => updateFilter("search", e.target.value)}
+                placeholder="Name, company, phone, code..."
+                className="min-h-11 w-full rounded-lg border border-input bg-background px-4 text-sm text-foreground outline-none transition placeholder:text-muted-foreground focus:border-ring focus:ring-4 focus:ring-ring/20"
+              />
+            </label>
+            <label className="block">
+              <span className="mb-2 block text-sm font-semibold text-foreground">Filter by date</span>
+              <input
+                type="date"
+                value={filters.date}
+                onChange={(e) => updateFilter("date", e.target.value)}
+                className="min-h-11 w-full rounded-lg border border-input bg-background px-4 text-sm text-foreground outline-none transition focus:border-ring focus:ring-4 focus:ring-ring/20"
+              />
+            </label>
+            <label className="block">
+              <span className="mb-2 block text-sm font-semibold text-foreground">Filter by day</span>
+              <select
+                value={filters.day}
+                onChange={(e) => updateFilter("day", e.target.value)}
+                className="min-h-11 w-full rounded-lg border border-input bg-background px-4 text-sm text-foreground outline-none transition focus:border-ring focus:ring-4 focus:ring-ring/20"
+              >
+                <option value="">All days</option>
+                {weekDays.map((day) => (
+                  <option key={day.value} value={day.value}>{day.label}</option>
+                ))}
+              </select>
+            </label>
+          </div>
+        )}
 
         {loading ? (
           <div className="flex items-center justify-center py-10 text-muted-foreground">
@@ -264,7 +298,7 @@ export default function DashboardPage() {
           <div className="overflow-x-auto rounded-lg">
             <table className="w-full min-w-[980px]">
               <thead>
-                <tr className="border-b text-left">
+                <tr className="border-b font-medium md:text-sm text-left">
                   <th className="py-3">Name</th>
                   <th>Company</th>
                   <th>Staff</th>
